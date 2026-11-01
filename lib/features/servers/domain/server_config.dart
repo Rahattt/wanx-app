@@ -190,6 +190,23 @@ class ObfuscationConfig {
   final String xrayFragmentLength;
   final String xrayFragmentInterval;
 
+  /// This config with [other]'s Xray-style fragmentation, which replaces
+  /// the sing-box one.
+  ObfuscationConfig withXrayFragmentOf(ObfuscationConfig other) =>
+      ObfuscationConfig(
+        fingerprint: fingerprint,
+        fragment: other.xrayFragment ? false : fragment,
+        recordFragment: other.xrayFragment ? false : recordFragment,
+        fragmentFallbackDelayMs: fragmentFallbackDelayMs,
+        reality: reality,
+        realityPublicKey: realityPublicKey,
+        realityShortId: realityShortId,
+        xrayFragment: other.xrayFragment,
+        xrayFragmentPackets: other.xrayFragmentPackets,
+        xrayFragmentLength: other.xrayFragmentLength,
+        xrayFragmentInterval: other.xrayFragmentInterval,
+      );
+
   Map<String, dynamic> toJson() => {
     'fingerprint': fingerprint.name,
     'fragment': fragment,

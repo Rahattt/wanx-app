@@ -318,10 +318,16 @@ class ServersController extends AsyncNotifier<ServersState> {
       for (final s in fresh) {
         // remove(): duplicate keys in one list must not share an id.
         final previous = old.remove(s.matchKey);
-        // Keep the local id (selection) and circumvention overrides.
+        // Keep the local id (selection) and circumvention overrides, except
+        // the Xray-style fragmentation when the subscription sets it.
         final merged = previous == null
             ? s
-            : s.copyWith(id: previous.id, obfuscation: previous.obfuscation);
+            : s.copyWith(
+                id: previous.id,
+                obfuscation: s.obfuscation.xrayFragment
+                    ? previous.obfuscation.withXrayFragmentOf(s.obfuscation)
+                    : previous.obfuscation,
+              );
         servers.add(merged);
       }
       updated[sub.name] = fresh.length;

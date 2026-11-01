@@ -207,6 +207,25 @@ void main() {
         reason: 'local overrides kept',
       );
 
+      // Fragmentation the provider adds later wins over the kept overrides.
+      fake.body =
+          'trojan://p@a.example.com:443?fragment=1-2,0-1,tlshello#a\n'
+          'trojan://p@c.example.com:443#c';
+      await controller.refreshSubscriptions();
+      final fragmented = container
+          .read(serversProvider)
+          .value!
+          .servers
+          .firstWhere((s) => s.name == 'a');
+      expect(fragmented.id, a.id);
+      expect(fragmented.obfuscation.xrayFragment, isTrue);
+      expect(fragmented.obfuscation.xrayFragmentLength, '1-2');
+      expect(
+        fragmented.toOutbound()['tls'].containsKey('fragment'),
+        isFalse,
+        reason: 'one splitter at a time',
+      );
+
       // A failing provider keeps its old servers and reports why.
       fake.error = SubscriptionException('HTTP 503 Service Unavailable');
       final failed = await controller.refreshSubscriptions();
