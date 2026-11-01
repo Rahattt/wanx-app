@@ -1,7 +1,8 @@
 # WanX
 
 VPN client for iOS and Android. It uses [sing-box](https://github.com/SagerNet/sing-box)
-(GPLv3) as its core; WanX is not affiliated with the sing-box project.
+(GPLv3) as its core, built from the [sing-box-lx](https://github.com/Leadaxe/sing-box-lx)
+fork (XHTTP, AmneziaWG); WanX is not affiliated with either project.
 
 ## Architecture
 
@@ -61,6 +62,11 @@ scripts/build_libbox.sh android   # → android/app/libs/libbox.aar
 scripts/build_libbox.sh apple     # → ios/Frameworks/Libbox.xcframework
 ```
 
+The core is built from a pinned sing-box-lx release: the script checks the
+tag and the four dependency submodules it swaps in (utls, gvisor, sing-tun,
+wireguard-go) and fetches only those. To update, change `LX_VERSION`,
+`LX_COMMIT` and `SUBMODULES` together.
+
 Requires Go, Xcode (apple) and the Android NDK (android):
 `ANDROID_NDK_HOME=~/Library/Android/sdk/ndk/<version>`. The libbox-backed
 cores are `LibboxCore.kt` and `ios/PacketTunnel/LibboxCore.swift`; both run
@@ -71,7 +77,7 @@ Both platforms get a slim libbox with only the features WanX uses (see
 `SLIM_TAGS`). On iOS the script also relinks gomobile's static library into a dynamic
 `Libbox.framework`. Runner embeds it once and the PacketTunnel extension loads
 it from the app bundle, so the core is not duplicated. To use a sing-box
-feature that was left out (e.g. WireGuard), add its tag to `SLIM_TAGS`.
+feature that was left out (e.g. Tailscale), add its tag to `SLIM_TAGS`.
 
 ## Build-time keys
 

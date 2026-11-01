@@ -266,7 +266,6 @@ private final class ProbePlatform: NSObject, LibboxPlatformInterfaceProtocol, @u
   }
   func underNetworkExtension() -> Bool { false }
   func includeAllNetworks() -> Bool { false }
-  func useProcFS() -> Bool { false }
   func findConnectionOwner(
     _ ipProtocol: Int32, sourceAddress: String?, sourcePort: Int32,
     destinationAddress: String?, destinationPort: Int32

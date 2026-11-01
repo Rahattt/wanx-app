@@ -8,6 +8,7 @@ import io.nekohasekai.libbox.CommandClient
 import io.nekohasekai.libbox.CommandClientHandler
 import io.nekohasekai.libbox.CommandClientOptions
 import io.nekohasekai.libbox.ConnectionEvents
+import io.nekohasekai.libbox.DnsQuery
 import io.nekohasekai.libbox.Libbox
 import io.nekohasekai.libbox.LogIterator
 import io.nekohasekai.libbox.OutboundGroupItemIterator
@@ -116,6 +117,7 @@ class TrafficClient(
     override fun setDefaultLogLevel(level: Int) {}
     override fun updateClashMode(newMode: String?) {}
     override fun writeConnectionEvents(events: ConnectionEvents?) {}
+    override fun writeDNSQuery(query: DnsQuery?) {}
     override fun writeGroups(message: OutboundGroupIterator?) {}
     override fun writeLogs(messageList: LogIterator?) {}
     override fun writeOutbounds(message: OutboundGroupItemIterator?) {}

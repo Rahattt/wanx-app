@@ -1,12 +1,31 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 /// Adds the licenses of native components (not Dart packages) to the
 /// Flutter license page.
 void registerNativeLicenses() {
   LicenseRegistry.addLicense(() async* {
-    yield const LicenseEntryWithLineBreaks(['sing-box'], _singBox);
+    // The core is built from sing-box-lx, a sing-box fork under the same license.
+    yield const LicenseEntryWithLineBreaks([
+      'sing-box',
+      'sing-box-lx',
+    ], _singBox);
+    // Dependencies the core links from sing-box-lx's forks, under their own
+    // licenses (texts copied from the forks' LICENSE files).
+    for (final (packages, file) in _coreDependencies) {
+      yield LicenseEntryWithLineBreaks(
+        packages,
+        await rootBundle.loadString('assets/licenses/$file'),
+      );
+    }
   });
 }
+
+const _coreDependencies = [
+  (['utls'], 'utls.txt'),
+  (['gVisor'], 'gvisor.txt'),
+  (['wireguard-go', 'AmneziaWG'], 'wireguard-go.txt'),
+];
 
 // From https://github.com/SagerNet/sing-box/blob/main/LICENSE
 const _singBox = '''

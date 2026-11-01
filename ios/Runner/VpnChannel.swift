@@ -351,6 +351,7 @@ final class TrafficMonitor: NSObject, FlutterStreamHandler, LibboxCommandClientH
   func setDefaultLogLevel(_ level: Int32) {}
   func updateClashMode(_ newMode: String?) {}
   func write(_ events: LibboxConnectionEvents?) {}
+  func write(_ query: LibboxDnsQuery?) {}
   func writeGroups(_ message: (any LibboxOutboundGroupIteratorProtocol)?) {}
   func writeLogs(_ messageList: (any LibboxLogIteratorProtocol)?) {}
   func writeOutbounds(_ message: (any LibboxOutboundGroupItemIteratorProtocol)?) {}

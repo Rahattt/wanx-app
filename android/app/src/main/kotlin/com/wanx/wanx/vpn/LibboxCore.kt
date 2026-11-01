@@ -250,8 +250,6 @@ class LibboxCore(
         return flags
     }
 
-    override fun useProcFS(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
-
     override fun findConnectionOwner(
         ipProtocol: Int,
         sourceAddress: String,

@@ -151,7 +151,6 @@ extension LibboxCore: LibboxPlatformInterfaceProtocol {
 
   func underNetworkExtension() -> Bool { true }
   func includeAllNetworks() -> Bool { false }
-  func useProcFS() -> Bool { false }
 
   /// Bridges an async call into libbox's synchronous callback thread.
   private static func waitFor(_ body: @escaping @Sendable () async throws -> Void) throws {
