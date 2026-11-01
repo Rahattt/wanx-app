@@ -449,9 +449,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumRevoked => '提供商已撤销此订阅';
 
   @override
-  String get premiumLinkExpired => '此订阅已过期';
-
-  @override
   String get premiumUnknown => '此订阅已不存在';
 
   @override

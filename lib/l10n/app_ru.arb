@@ -133,7 +133,6 @@
   "splitValueBypass": "Кроме {count}",
   "premiumDeviceRemoved": "Провайдер ограничил доступ для этого устройства",
   "premiumRevoked": "Провайдер отозвал эту подписку",
-  "premiumLinkExpired": "Срок действия подписки истёк",
   "premiumUnknown": "Эта подписка больше не существует",
   "premiumDeviceLimit": "Ссылка уже добавлена на максимальное число устройств",
   "premiumPlanInactive": "План провайдера в WanX не активен",

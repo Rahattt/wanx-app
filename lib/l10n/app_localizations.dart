@@ -902,12 +902,6 @@ abstract class AppLocalizations {
   /// **'The provider has revoked this subscription'**
   String get premiumRevoked;
 
-  /// No description provided for @premiumLinkExpired.
-  ///
-  /// In en, this message translates to:
-  /// **'This subscription has expired'**
-  String get premiumLinkExpired;
-
   /// No description provided for @premiumUnknown.
   ///
   /// In en, this message translates to:

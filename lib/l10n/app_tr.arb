@@ -133,7 +133,6 @@
   "splitValueBypass": "{count} hariç",
   "premiumDeviceRemoved": "Sağlayıcı bu cihazın erişimini kısıtladı",
   "premiumRevoked": "Sağlayıcı bu aboneliği iptal etti",
-  "premiumLinkExpired": "Bu aboneliğin süresi doldu",
   "premiumUnknown": "Bu abonelik artık mevcut değil",
   "premiumDeviceLimit": "Bu bağlantı zaten en fazla cihaza eklendi",
   "premiumPlanInactive": "Bu sağlayıcının WanX planı etkin değil",

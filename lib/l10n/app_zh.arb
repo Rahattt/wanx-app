@@ -133,7 +133,6 @@
   "splitValueBypass": "排除 {count} 个",
   "premiumDeviceRemoved": "提供商已限制此设备的访问",
   "premiumRevoked": "提供商已撤销此订阅",
-  "premiumLinkExpired": "此订阅已过期",
   "premiumUnknown": "此订阅已不存在",
   "premiumDeviceLimit": "此链接已添加到最大数量的设备",
   "premiumPlanInactive": "该提供商的 WanX 套餐未激活",

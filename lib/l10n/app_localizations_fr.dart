@@ -461,9 +461,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get premiumRevoked => 'Le fournisseur a révoqué cet abonnement';
 
   @override
-  String get premiumLinkExpired => 'Cet abonnement a expiré';
-
-  @override
   String get premiumUnknown => 'Cet abonnement n’existe plus';
 
   @override

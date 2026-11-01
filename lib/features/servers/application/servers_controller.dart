@@ -95,7 +95,6 @@ enum ImportFailure { duplicateSubscription, duplicateGroup, other }
 String premiumRefusal(AppLocalizations l10n, String code) => switch (code) {
   'device_removed' => l10n.premiumDeviceRemoved,
   'revoked' => l10n.premiumRevoked,
-  'link_expired' => l10n.premiumLinkExpired,
   'unknown_link' => l10n.premiumUnknown,
   'device_limit' => l10n.premiumDeviceLimit,
   'plan_inactive' => l10n.premiumPlanInactive,

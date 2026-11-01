@@ -263,7 +263,6 @@
   "@splitValueBypass": {"placeholders": {"count": {"type": "int"}}},
   "premiumDeviceRemoved": "The provider has restricted access for this device",
   "premiumRevoked": "The provider has revoked this subscription",
-  "premiumLinkExpired": "This subscription has expired",
   "premiumUnknown": "This subscription no longer exists",
   "premiumDeviceLimit": "This link is already added on the maximum number of devices",
   "premiumPlanInactive": "This provider’s WanX plan is not active",

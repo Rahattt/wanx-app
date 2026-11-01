@@ -461,9 +461,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get premiumRevoked => 'Провайдер отозвал эту подписку';
 
   @override
-  String get premiumLinkExpired => 'Срок действия подписки истёк';
-
-  @override
   String get premiumUnknown => 'Эта подписка больше не существует';
 
   @override

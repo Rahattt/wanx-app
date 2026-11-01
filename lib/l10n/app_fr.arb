@@ -133,7 +133,6 @@
   "splitValueBypass": "Sauf {count}",
   "premiumDeviceRemoved": "Le fournisseur a restreint l’accès pour cet appareil",
   "premiumRevoked": "Le fournisseur a révoqué cet abonnement",
-  "premiumLinkExpired": "Cet abonnement a expiré",
   "premiumUnknown": "Cet abonnement n’existe plus",
   "premiumDeviceLimit": "Ce lien est déjà ajouté sur le nombre maximal d’appareils",
   "premiumPlanInactive": "Le forfait WanX de ce fournisseur n’est pas actif",

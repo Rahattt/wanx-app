@@ -457,9 +457,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get premiumRevoked => 'Sağlayıcı bu aboneliği iptal etti';
 
   @override
-  String get premiumLinkExpired => 'Bu aboneliğin süresi doldu';
-
-  @override
   String get premiumUnknown => 'Bu abonelik artık mevcut değil';
 
   @override
