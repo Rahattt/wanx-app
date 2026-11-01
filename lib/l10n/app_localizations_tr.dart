@@ -230,6 +230,29 @@ class AppLocalizationsTr extends AppLocalizations {
   String get fieldXhttpMode => 'Mod';
 
   @override
+  String get fieldPrivateKey => 'Özel anahtar';
+
+  @override
+  String get fieldAddresses => 'Adresler';
+
+  @override
+  String get fieldPeerPublicKey => 'Sunucu açık anahtarı';
+
+  @override
+  String get fieldPresharedKey => 'Ön paylaşımlı anahtar';
+
+  @override
+  String get wgObfuscation => 'WireGuard gizleme';
+
+  @override
+  String get wgObfuscationHint =>
+      'El sıkışmadan önce gereksiz paketler ve DNS yemi, Amnezia\'daki gibi. Her WireGuard sunucusuyla çalışır';
+
+  @override
+  String get wgObfuscationAmneziaServer =>
+      'Bu AmneziaWG sunucusu tarafından ayarlandı, kapatılamaz';
+
+  @override
   String get sectionTls => 'TLS';
 
   @override

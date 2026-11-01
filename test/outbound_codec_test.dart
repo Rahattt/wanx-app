@@ -94,7 +94,7 @@ void main() {
   test('rejects unsupported or incomplete outbounds with a reason', () {
     expect(
       () => OutboundCodec.fromOutbound({
-        'type': 'wireguard',
+        'type': 'tor',
         'server': 'x',
         'server_port': 1,
       }),
@@ -102,7 +102,17 @@ void main() {
         isA<OutboundFormatException>().having(
           (e) => e.message,
           'message',
-          contains('wireguard'),
+          contains('tor'),
+        ),
+      ),
+    );
+    expect(
+      () => OutboundCodec.fromOutbound({'type': 'wireguard', 'peers': []}),
+      throwsA(
+        isA<OutboundFormatException>().having(
+          (e) => e.message,
+          'message',
+          contains('no peers'),
         ),
       ),
     );

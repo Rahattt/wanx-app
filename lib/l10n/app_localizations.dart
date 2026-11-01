@@ -476,6 +476,48 @@ abstract class AppLocalizations {
   /// **'Mode'**
   String get fieldXhttpMode;
 
+  /// No description provided for @fieldPrivateKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Private key'**
+  String get fieldPrivateKey;
+
+  /// No description provided for @fieldAddresses.
+  ///
+  /// In en, this message translates to:
+  /// **'Addresses'**
+  String get fieldAddresses;
+
+  /// No description provided for @fieldPeerPublicKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Server public key'**
+  String get fieldPeerPublicKey;
+
+  /// No description provided for @fieldPresharedKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Preshared key'**
+  String get fieldPresharedKey;
+
+  /// No description provided for @wgObfuscation.
+  ///
+  /// In en, this message translates to:
+  /// **'WireGuard obfuscation'**
+  String get wgObfuscation;
+
+  /// No description provided for @wgObfuscationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Junk packets and a DNS decoy before the handshake, as in Amnezia. Works with any WireGuard server'**
+  String get wgObfuscationHint;
+
+  /// No description provided for @wgObfuscationAmneziaServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Set by this AmneziaWG server, can\'t be turned off'**
+  String get wgObfuscationAmneziaServer;
+
   /// No description provided for @sectionTls.
   ///
   /// In en, this message translates to:

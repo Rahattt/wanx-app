@@ -284,6 +284,7 @@ class ProtocolBadge extends StatelessWidget {
     ServerProtocol.shadowsocks => 'SS',
     ServerProtocol.hysteria2 => 'HY2',
     ServerProtocol.tuic => 'TUIC',
+    ServerProtocol.wireguard => 'WG',
   };
 
   @override

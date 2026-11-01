@@ -161,10 +161,13 @@ enum LatencyProbe {
       throw ProbeError("outbound must be a JSON object")
     }
     outbound["tag"] = outboundTag
-    let config: [String: Any] = [
+    // WireGuard is a sing-box endpoint, not an outbound.
+    let isEndpoint = outbound["type"] as? String == "wireguard"
+    let direct: [String: Any] = ["type": "direct", "tag": "direct"]
+    var config: [String: Any] = [
       "log": ["level": "warn"],
       "dns": ["servers": [["tag": "local", "type": "udp", "server": dns]]],
-      "outbounds": [outbound, ["type": "direct", "tag": "direct"]],
+      "outbounds": isEndpoint ? [direct] : [outbound, direct],
       "route": [
         "final": outboundTag,
         "auto_detect_interface": true,
@@ -175,6 +178,7 @@ enum LatencyProbe {
         "cache_file": ["path": cacheFile],
       ],
     ]
+    if isEndpoint { config["endpoints"] = [outbound] }
     return String(decoding: try JSONSerialization.data(withJSONObject: config), as: UTF8.self)
   }
 

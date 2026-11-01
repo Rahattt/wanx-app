@@ -228,6 +228,28 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fieldXhttpMode => '模式';
 
   @override
+  String get fieldPrivateKey => '私钥';
+
+  @override
+  String get fieldAddresses => '地址';
+
+  @override
+  String get fieldPeerPublicKey => '服务器公钥';
+
+  @override
+  String get fieldPresharedKey => '预共享密钥';
+
+  @override
+  String get wgObfuscation => 'WireGuard 混淆';
+
+  @override
+  String get wgObfuscationHint =>
+      '握手前发送垃圾包和 DNS 伪装包，与 Amnezia 相同。适用于任何 WireGuard 服务器';
+
+  @override
+  String get wgObfuscationAmneziaServer => '由此 AmneziaWG 服务器设定，无法关闭';
+
+  @override
   String get sectionTls => 'TLS';
 
   @override

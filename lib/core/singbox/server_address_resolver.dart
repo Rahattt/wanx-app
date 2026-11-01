@@ -31,7 +31,7 @@ class ServerAddressResolver {
   /// Returns [outbound] with `server` replaced by an IP. The hostname moves
   /// to TLS SNI and HTTP Host so the server still sees it.
   Future<Map<String, dynamic>> pin(Map<String, dynamic> outbound) async {
-    final host = outbound['server'];
+    final host = _host(outbound);
     if (host is! String ||
         host.isEmpty ||
         InternetAddress.tryParse(host) != null) {
@@ -54,10 +54,27 @@ class ServerAddressResolver {
     return withAddress(outbound, ip.address);
   }
 
+  /// The server's hostname: `server`, or a WireGuard endpoint's first peer.
+  static Object? _host(Map<String, dynamic> outbound) {
+    if (outbound['type'] != 'wireguard') return outbound['server'];
+    final peer = (outbound['peers'] as List?)?.firstOrNull;
+    return peer is Map ? peer['address'] : null;
+  }
+
   static Map<String, dynamic> withAddress(
     Map<String, dynamic> outbound,
     String ip,
   ) {
+    if (outbound['type'] == 'wireguard') {
+      final peers = outbound['peers'] as List;
+      return {
+        ...outbound,
+        'peers': [
+          {...(peers.first as Map).cast<String, dynamic>(), 'address': ip},
+          ...peers.skip(1),
+        ],
+      };
+    }
     final host = outbound['server'] as String;
     final out = {...outbound, 'server': ip};
     if (outbound['tls'] case final Map<String, dynamic> tls

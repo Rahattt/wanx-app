@@ -40,6 +40,7 @@ class SingBoxConfigBuilder {
   /// [outbound] overrides `server.toOutbound()`, e.g. with the address
   /// already resolved by [ServerAddressResolver].
   Map<String, dynamic> build(Server server, {Map<String, dynamic>? outbound}) {
+    final proxy = {...(outbound ?? server.toOutbound()), 'tag': proxyTag};
     final remote = Uri.parse(remoteDns);
     final v6 = ipMode != IpMode.ipv4;
     return {
@@ -79,8 +80,10 @@ class SingBoxConfigBuilder {
               'exclude_package': splitApps,
         },
       ],
+      // WireGuard is an endpoint; route and DNS reach it by tag the same way.
+      if (server.protocol.isEndpoint) 'endpoints': [proxy],
       'outbounds': [
-        {...(outbound ?? server.toOutbound()), 'tag': proxyTag},
+        if (!server.protocol.isEndpoint) proxy,
         {'type': 'direct', 'tag': 'direct'},
       ],
       'route': {

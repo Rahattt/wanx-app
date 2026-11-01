@@ -318,9 +318,14 @@ class SubscriptionFetcher {
     if (outbounds is! List) {
       throw SubscriptionException('sing-box JSON has no "outbounds" list');
     }
+    // WireGuard servers are endpoints since sing-box 1.11.
+    final endpoints = (json as Map)['endpoints'];
     final servers = <Server>[];
     String? firstError;
-    for (final o in outbounds.whereType<Map>()) {
+    for (final o in [
+      ...outbounds,
+      if (endpoints is List) ...endpoints,
+    ].whereType<Map>()) {
       final outbound = Map<String, dynamic>.from(o);
       // selector/urltest/direct/block/dns are routing helpers, not servers.
       if (ServerProtocol.fromOutboundType(outbound['type'] as String?) ==

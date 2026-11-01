@@ -38,8 +38,16 @@ abstract final class OutboundCodec {
     if (protocol == null) {
       throw OutboundFormatException('Unsupported outbound type "$type"');
     }
-    final host = outbound['server'];
-    final port = outbound['server_port'];
+    // A WireGuard endpoint has its server in the first peer.
+    final peers = outbound['peers'];
+    final peer = protocol.isEndpoint && peers is List && peers.isNotEmpty
+        ? _map(peers.first)
+        : null;
+    if (protocol.isEndpoint && peer == null) {
+      throw OutboundFormatException('${protocol.label} endpoint has no peers');
+    }
+    final host = peer != null ? peer['address'] : outbound['server'];
+    final port = peer != null ? peer['port'] : outbound['server_port'];
     if (host is! String || host.isEmpty) {
       throw OutboundFormatException(
         '${protocol.label} outbound has no server address',
@@ -61,9 +69,19 @@ abstract final class OutboundCodec {
       settings: {
         for (final e in outbound.entries)
           if (!_commonKeys.contains(e.key)) e.key: e.value,
+        if (peer != null)
+          'peers': [
+            {...peer}
+              ..remove('address')
+              ..remove('port'),
+            ...(peers as List).skip(1),
+          ],
       },
       transport: _transportFrom(_map(outbound['transport'])),
-      tls: _tlsFrom(tlsMap, forceEnabled: protocol.isUdpBased),
+      tls: _tlsFrom(
+        tlsMap,
+        forceEnabled: protocol.isUdpBased && protocol.supportsTls,
+      ),
       obfuscation: _obfuscationFrom(tlsMap),
       group: group,
       subscriptionId: subscriptionId,
@@ -71,6 +89,17 @@ abstract final class OutboundCodec {
   }
 
   static Map<String, dynamic> toOutbound(Server s) {
+    if (s.protocol.isEndpoint) {
+      final peers = s.settings['peers'] as List? ?? const [{}];
+      return {
+        'type': s.protocol.outboundType,
+        ...s.settings,
+        'peers': [
+          {..._map(peers.first), 'address': s.host, 'port': s.port},
+          ...peers.skip(1),
+        ],
+      };
+    }
     return {
       'type': s.protocol.outboundType,
       'server': s.host,

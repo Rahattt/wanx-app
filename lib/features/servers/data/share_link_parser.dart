@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../domain/outbound_codec.dart';
 import '../domain/server.dart';
+import 'wireguard_parser.dart';
 
 class ShareLinkException implements Exception {
   ShareLinkException(this.message);
@@ -44,7 +45,8 @@ class ParseResult {
 }
 
 /// Converts share links (vless://, vmess://, trojan://, ss://, hysteria2://,
-/// hy2://, tuic://) into [Server] profiles.
+/// hy2://, tuic://, wireguard://, Amnezia vpn://) and WireGuard `.conf` text
+/// into [Server] profiles.
 class ShareLinkParser {
   static const supportedSchemes = [
     'vless',
@@ -54,6 +56,9 @@ class ShareLinkParser {
     'hysteria2',
     'hy2',
     'tuic',
+    'wireguard',
+    'wg',
+    'vpn',
   ];
 
   /// Parses every non-empty line in [text]. Also accepts a base64-encoded
@@ -61,6 +66,21 @@ class ShareLinkParser {
   ParseResult parseMany(String text, {String? group, String? subscriptionId}) {
     var body = text.trim();
     if (body.isEmpty) return const ParseResult([], []);
+    // A WireGuard config is one multi-line profile, not a list of links.
+    if (WireGuardParser.isConf(body)) {
+      try {
+        return ParseResult([
+          _fromOutbound(
+            WireGuardParser.parseConf(body),
+            null,
+            group: group,
+            subscriptionId: subscriptionId,
+          ),
+        ], const []);
+      } on ShareLinkException catch (e) {
+        return ParseResult(const [], [ParseFailure('[Interface]', e.message)]);
+      }
+    }
     if (!body.contains('://')) {
       try {
         body = _decodeBase64(body.replaceAll(RegExp(r'\s'), ''));
@@ -87,14 +107,32 @@ class ShareLinkParser {
   Server parse(String link, {String? group, String? subscriptionId}) {
     try {
       final (outbound, name) = _parse(link);
+      return _fromOutbound(
+        outbound,
+        name,
+        group: group,
+        subscriptionId: subscriptionId,
+      );
+    } on FormatException catch (e) {
+      throw ShareLinkException('Malformed link: ${e.message}');
+    } on OutboundFormatException catch (e) {
+      throw ShareLinkException(e.message);
+    }
+  }
+
+  Server _fromOutbound(
+    Map<String, dynamic> outbound,
+    String? name, {
+    String? group,
+    String? subscriptionId,
+  }) {
+    try {
       return OutboundCodec.fromOutbound(
         outbound,
         name: name,
         group: group,
         subscriptionId: subscriptionId,
       );
-    } on FormatException catch (e) {
-      throw ShareLinkException('Malformed link: ${e.message}');
     } on OutboundFormatException catch (e) {
       throw ShareLinkException(e.message);
     }
@@ -110,6 +148,9 @@ class ShareLinkParser {
       'trojan' => _withName(Uri.parse(link), _trojan),
       'hysteria2' || 'hy2' => _withName(Uri.parse(link), _hysteria2),
       'tuic' => _withName(Uri.parse(link), _tuic),
+      'wireguard' ||
+      'wg' => _withName(Uri.parse(link), WireGuardParser.parseLink),
+      'vpn' => WireGuardParser.parseAmnezia(link),
       'ss' => _shadowsocks(link),
       'vmess' => _vmess(link),
       _ => throw ShareLinkException(

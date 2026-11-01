@@ -8,7 +8,11 @@ enum ServerProtocol {
   trojan('Trojan'),
   shadowsocks('Shadowsocks'),
   hysteria2('Hysteria2'),
-  tuic('TUIC');
+  tuic('TUIC'),
+
+  /// A sing-box endpoint (not an outbound), with optional AmneziaWG
+  /// obfuscation.
+  wireguard('WireGuard');
 
   const ServerProtocol(this.label);
 
@@ -30,10 +34,14 @@ enum ServerProtocol {
   bool get supportsTransport =>
       this == vless || this == vmess || this == trojan;
 
-  bool get supportsTls => this != shadowsocks;
+  bool get supportsTls => this != shadowsocks && this != wireguard;
 
-  /// QUIC-based: TLS is mandatory and there is no TCP handshake to probe.
-  bool get isUdpBased => this == hysteria2 || this == tuic;
+  /// No TCP handshake to probe, and UDP (QUIC) is carried natively. The QUIC
+  /// ones also make TLS mandatory.
+  bool get isUdpBased => this == hysteria2 || this == tuic || isEndpoint;
+
+  /// Goes into the sing-box config's `endpoints`, not `outbounds`.
+  bool get isEndpoint => this == wireguard;
 }
 
 /// A server profile. The sing-box outbound is derived from the typed configs

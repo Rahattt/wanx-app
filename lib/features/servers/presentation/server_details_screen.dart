@@ -13,6 +13,7 @@ import '../../../theme/app_theme.dart';
 import '../../../theme/components.dart';
 import '../../../theme/motion.dart';
 import '../domain/server_config.dart';
+import '../domain/wireguard_obfuscation.dart';
 import 'widgets/server_tile.dart';
 
 /// View/edit a server profile, or create one by hand ([ServerDetailsScreen.create]).
@@ -69,6 +70,19 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
         : '',
   );
 
+  late final _wgPrivateKey = TextEditingController(
+    text: _setting('private_key'),
+  );
+  late final _wgAddress = TextEditingController(
+    text: (_original.settings['address'] as List? ?? const []).join(', '),
+  );
+  late final _wgPeerKey = TextEditingController(text: _peer('public_key'));
+  late final _wgPresharedKey = TextEditingController(
+    text: _peer('pre_shared_key'),
+  );
+  late final _wgMtu = TextEditingController(text: _setting('mtu'));
+  late bool _wgObfuscation = WireGuardObfuscation.isEnabled(_original.settings);
+
   late ServerProtocol _protocol = _original.protocol;
   late String _flow = _setting('flow');
   late String _vmessSecurity = _setting('security').isEmpty
@@ -100,6 +114,15 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
 
   String _setting(String key) => '${_original.settings[key] ?? ''}';
 
+  Map<String, dynamic> get _firstPeer {
+    final peers = _original.settings['peers'];
+    return peers is List && peers.isNotEmpty && peers.first is Map
+        ? Map<String, dynamic>.from(peers.first as Map)
+        : <String, dynamic>{};
+  }
+
+  String _peer(String key) => '${_firstPeer[key] ?? ''}';
+
   static const _ssMethods = [
     '2022-blake3-aes-128-gcm',
     '2022-blake3-aes-256-gcm',
@@ -130,7 +153,11 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
         name: '',
         protocol: protocol,
         host: '',
-        port: protocol == ServerProtocol.shadowsocks ? 8388 : 443,
+        port: switch (protocol) {
+          ServerProtocol.shadowsocks => 8388,
+          ServerProtocol.wireguard => 51820,
+          _ => 443,
+        },
         tls: TlsConfig(enabled: protocol == ServerProtocol.trojan),
       );
     } else {
@@ -156,6 +183,11 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
       _password,
       _alterId,
       _obfsPassword,
+      _wgPrivateKey,
+      _wgAddress,
+      _wgPeerKey,
+      _wgPresharedKey,
+      _wgMtu,
     ]) {
       c.dispose();
     }
@@ -385,6 +417,7 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
         password(),
         _field(_obfsPassword, l10n.fieldObfsPassword, hint: l10n.optional),
       ],
+      ServerProtocol.wireguard => _wireGuardFields(),
       ServerProtocol.tuic => [
         uuid(),
         password(),
@@ -399,6 +432,67 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
         ),
       ],
     };
+  }
+
+  List<Widget> _wireGuardFields() {
+    // Server-side AWG parameters can't be dropped: the server needs them.
+    final amneziaServer = WireGuardObfuscation.needsAmneziaServer(
+      _original.settings,
+    );
+    return [
+      _field(_wgPrivateKey, l10n.fieldPrivateKey, validator: _required),
+      _field(
+        _wgAddress,
+        l10n.fieldAddresses,
+        hint: '10.0.0.2/32, fd00::2/128',
+        validator: _required,
+      ),
+      _field(_wgPeerKey, l10n.fieldPeerPublicKey, validator: _required),
+      _field(_wgPresharedKey, l10n.fieldPresharedKey, hint: l10n.optional),
+      _field(
+        _wgMtu,
+        'MTU',
+        hint: l10n.optional,
+        keyboard: TextInputType.number,
+        digitsOnly: true,
+      ),
+      _SwitchRow(
+        title: l10n.wgObfuscation,
+        subtitle: amneziaServer
+            ? l10n.wgObfuscationAmneziaServer
+            : l10n.wgObfuscationHint,
+        value: _wgObfuscation || amneziaServer,
+        onChanged: amneziaServer
+            ? null
+            : (v) => setState(() => _wgObfuscation = v),
+      ),
+    ];
+  }
+
+  Map<String, dynamic> _wireGuardSettings(Map<String, dynamic> base) {
+    final psk = _wgPresharedKey.text.trim();
+    final peers = _original.settings['peers'] as List? ?? const [];
+    final peer = {
+      ..._firstPeer,
+      'public_key': _wgPeerKey.text.trim(),
+      'allowed_ips': _firstPeer['allowed_ips'] ?? const ['0.0.0.0/0', '::/0'],
+    }..remove('pre_shared_key');
+    final settings = {
+      ...base,
+      'private_key': _wgPrivateKey.text.trim(),
+      'address': [
+        for (final a in _wgAddress.text.split(','))
+          if (a.trim().isNotEmpty) a.trim(),
+      ],
+      if (int.tryParse(_wgMtu.text) case final mtu? when mtu > 0) 'mtu': mtu,
+      'peers': [
+        {...peer, if (psk.isNotEmpty) 'pre_shared_key': psk},
+        ...peers.skip(1),
+      ],
+    };
+    return _wgObfuscation
+        ? WireGuardObfuscation.enable(settings)
+        : WireGuardObfuscation.disable(settings);
   }
 
   /// [options], plus [current] if an imported profile uses something else.
@@ -417,6 +511,9 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
       'method',
       'obfs',
       'congestion_control',
+      'private_key',
+      'address',
+      'mtu',
     };
     final out = <String, dynamic>{
       if (_protocol == _original.protocol)
@@ -448,6 +545,8 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
         out['uuid'] = uuid;
         out['password'] = password;
         out['congestion_control'] = _congestion;
+      case ServerProtocol.wireguard:
+        return _wireGuardSettings(out);
     }
     return out;
   }

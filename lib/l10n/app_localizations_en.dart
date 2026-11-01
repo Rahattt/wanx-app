@@ -231,6 +231,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldXhttpMode => 'Mode';
 
   @override
+  String get fieldPrivateKey => 'Private key';
+
+  @override
+  String get fieldAddresses => 'Addresses';
+
+  @override
+  String get fieldPeerPublicKey => 'Server public key';
+
+  @override
+  String get fieldPresharedKey => 'Preshared key';
+
+  @override
+  String get wgObfuscation => 'WireGuard obfuscation';
+
+  @override
+  String get wgObfuscationHint =>
+      'Junk packets and a DNS decoy before the handshake, as in Amnezia. Works with any WireGuard server';
+
+  @override
+  String get wgObfuscationAmneziaServer =>
+      'Set by this AmneziaWG server, can\'t be turned off';
+
+  @override
   String get sectionTls => 'TLS';
 
   @override

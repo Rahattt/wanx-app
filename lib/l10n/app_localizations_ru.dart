@@ -231,6 +231,29 @@ class AppLocalizationsRu extends AppLocalizations {
   String get fieldXhttpMode => 'Режим';
 
   @override
+  String get fieldPrivateKey => 'Приватный ключ';
+
+  @override
+  String get fieldAddresses => 'Адреса';
+
+  @override
+  String get fieldPeerPublicKey => 'Публичный ключ сервера';
+
+  @override
+  String get fieldPresharedKey => 'Общий ключ (PSK)';
+
+  @override
+  String get wgObfuscation => 'Обфускация WireGuard';
+
+  @override
+  String get wgObfuscationHint =>
+      'Мусорные пакеты и маскировка под DNS перед рукопожатием, как в Amnezia. Работает с любым сервером WireGuard';
+
+  @override
+  String get wgObfuscationAmneziaServer =>
+      'Задана сервером AmneziaWG, выключить нельзя';
+
+  @override
   String get sectionTls => 'TLS';
 
   @override

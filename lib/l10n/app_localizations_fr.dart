@@ -231,6 +231,29 @@ class AppLocalizationsFr extends AppLocalizations {
   String get fieldXhttpMode => 'Mode';
 
   @override
+  String get fieldPrivateKey => 'Clé privée';
+
+  @override
+  String get fieldAddresses => 'Adresses';
+
+  @override
+  String get fieldPeerPublicKey => 'Clé publique du serveur';
+
+  @override
+  String get fieldPresharedKey => 'Clé prépartagée';
+
+  @override
+  String get wgObfuscation => 'Obfuscation WireGuard';
+
+  @override
+  String get wgObfuscationHint =>
+      'Paquets parasites et leurre DNS avant la négociation, comme dans Amnezia. Fonctionne avec tout serveur WireGuard';
+
+  @override
+  String get wgObfuscationAmneziaServer =>
+      'Définie par ce serveur AmneziaWG, impossible à désactiver';
+
+  @override
   String get sectionTls => 'TLS';
 
   @override

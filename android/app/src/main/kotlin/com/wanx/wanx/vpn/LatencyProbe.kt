@@ -107,15 +107,20 @@ object LatencyProbe {
         }
     }
 
-    private fun config(outbound: JSONObject, dns: String, port: Int, secret: String, cacheFile: String): String =
-        JSONObject()
+    private fun config(outbound: JSONObject, dns: String, port: Int, secret: String, cacheFile: String): String {
+        outbound.put("tag", OUTBOUND_TAG)
+        // WireGuard is a sing-box endpoint, not an outbound.
+        val isEndpoint = outbound.optString("type") == "wireguard"
+        val outbounds = JSONArray()
+        if (!isEndpoint) outbounds.put(outbound)
+        outbounds.put(JSONObject().put("type", "direct").put("tag", "direct"))
+        return JSONObject()
             .put("log", JSONObject().put("level", "warn"))
             .put("dns", JSONObject().put("servers", JSONArray().put(
                 JSONObject().put("tag", "local").put("type", "udp").put("server", dns)
             )))
-            .put("outbounds", JSONArray()
-                .put(outbound.put("tag", OUTBOUND_TAG))
-                .put(JSONObject().put("type", "direct").put("tag", "direct")))
+            .apply { if (isEndpoint) put("endpoints", JSONArray().put(outbound)) }
+            .put("outbounds", outbounds)
             .put("route", JSONObject()
                 .put("final", OUTBOUND_TAG)
                 .put("auto_detect_interface", true)
@@ -126,6 +131,7 @@ object LatencyProbe {
                     .put("secret", secret))
                 .put("cache_file", JSONObject().put("path", cacheFile)))
             .toString()
+    }
 
     /**
      * Reuses LibboxCore's network monitoring (physical, non-VPN network), but
