@@ -24,7 +24,8 @@ fork (XHTTP, AmneziaWG); WanX is not affiliated with either project.
                                              ─► Libbox.xcframework (gomobile)
 ```
 
-Dart builds the full sing-box JSON config (TUN inbound + selected outbound)
+Dart builds the full sing-box JSON config (TUN inbound + selected outbound,
+or endpoint for WireGuard)
 and hands it to the native side. The native side only owns the tunnel
 lifecycle and the core; it knows nothing about share links or UI state.
 
@@ -54,6 +55,25 @@ ios/Runner/VpnChannel.swift
 ios/PacketTunnel/                        Network Extension sources
 scripts/build_libbox.sh                  builds libbox via gomobile
 ```
+
+## Protocols
+
+VLESS, VMess, Trojan, Shadowsocks, Hysteria2, TUIC and WireGuard, imported
+from share links, base64 or sing-box JSON subscriptions, or entered by hand.
+
+- **XHTTP** (Xray's SplitHTTP) on VLESS/VMess/Trojan, from the sing-box-lx
+  core: `type=xhttp` (or `splithttp`) links with `path`, `host`, `mode` and
+  `extra`. As in Xray, `alpn=h3` runs it over HTTP/3 (QUIC). Xray's
+  camelCase `extra` keys are mapped to the core's; `downloadSettings` is not
+  supported by the core and is dropped.
+- **WireGuard / AmneziaWG** as a sing-box endpoint: wg-quick/awg-quick
+  `.conf` text, `wireguard://` links and the Amnezia app's `vpn://` export.
+  AWG 1.x–3.x parameters are kept. Plain WireGuard imported from a `.conf`
+  or a link gets obfuscation by default, like the Amnezia client's import checkbox: 4–6
+  junk packets of 10–50 bytes and a DNS-response decoy before the
+  handshake, with S/H left at the WireGuard defaults, so any WireGuard
+  server accepts it. It can be turned off per server. Profiles whose AWG
+  parameters must match an AmneziaWG server keep them.
 
 ## Linking the sing-box core
 

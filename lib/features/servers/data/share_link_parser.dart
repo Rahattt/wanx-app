@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../domain/outbound_codec.dart';
 import '../domain/server.dart';
+import '../domain/wireguard_obfuscation.dart';
 import 'wireguard_parser.dart';
 
 class ShareLinkException implements Exception {
@@ -128,7 +129,11 @@ class ShareLinkParser {
   }) {
     try {
       return OutboundCodec.fromOutbound(
-        outbound,
+        // Like the Amnezia client's import checkbox, on by default: a plain
+        // WireGuard server drops the junk, so nothing can break.
+        outbound['type'] == 'wireguard'
+            ? WireGuardObfuscation.enable(outbound)
+            : outbound,
         name: name,
         group: group,
         subscriptionId: subscriptionId,

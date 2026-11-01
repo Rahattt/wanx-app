@@ -32,8 +32,7 @@ PersistentKeepalive = 25
     final s = parser.parseMany(plainConf).servers.single;
     expect(s.protocol, ServerProtocol.wireguard);
     expect(s.address, 'wg.example.com:51820');
-    expect(WireGuardObfuscation.isEnabled(s.settings), isFalse);
-    expect(s.toOutbound(), {
+    expect(WireGuardObfuscation.disable(s.toOutbound()), {
       'type': 'wireguard',
       'private_key': 'cPRIV=',
       'address': ['10.66.0.2/32', 'fd00::2/128'],
@@ -92,8 +91,11 @@ Endpoint = [2001:db8::1]:30565
   });
 
   test('obfuscation adds what the Amnezia client adds to plain WireGuard', () {
-    final s = parser.parseMany(plainConf).servers.single;
-    final on = WireGuardObfuscation.enable(s.settings, random: Random(1));
+    final plain = WireGuardObfuscation.disable(
+      parser.parseMany(plainConf).servers.single.settings,
+    );
+    expect(WireGuardObfuscation.isEnabled(plain), isFalse);
+    final on = WireGuardObfuscation.enable(plain, random: Random(1));
     expect(on['jc'], inInclusiveRange(4, 6));
     expect(on['jmin'], 10);
     expect(on['jmax'], 50);
@@ -101,7 +103,16 @@ Endpoint = [2001:db8::1]:30565
     // Plain WireGuard server: no S/H changes.
     expect(WireGuardObfuscation.needsAmneziaServer(on), isFalse);
     expect(WireGuardObfuscation.isEnabled(on), isTrue);
-    expect(WireGuardObfuscation.disable(on), s.settings);
+    expect(WireGuardObfuscation.disable(on), plain);
+  });
+
+  test('plain WireGuard is imported with obfuscation on', () {
+    final s = parser.parseMany(plainConf).servers.single;
+    expect(s.settings['jc'], inInclusiveRange(4, 6));
+    expect(s.settings['jmin'], 10);
+    expect(s.settings['jmax'], 50);
+    expect(s.settings['i1'], WireGuardObfuscation.amneziaI1);
+    expect(WireGuardObfuscation.needsAmneziaServer(s.settings), isFalse);
   });
 
   test('parses a wireguard:// link', () {
