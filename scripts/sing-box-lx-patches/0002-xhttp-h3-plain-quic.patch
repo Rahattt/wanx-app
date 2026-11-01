@@ -1,0 +1,61 @@
+diff --git a/transport/v2rayxhttp/http3.go b/transport/v2rayxhttp/http3.go
+index 29596e9..8ba96c5 100644
+--- a/transport/v2rayxhttp/http3.go
++++ b/transport/v2rayxhttp/http3.go
+@@ -112,14 +112,18 @@ func newHTTP3Transport(dialer N.Dialer, serverAddr M.Socksaddr, tlsConfig tls.Co
+ 		stdConfig = &stdTLS.Config{}
+ 	}
+ 	if fromUTLS {
+-		warn("utls fingerprint is not applied over HTTP/3, the QUIC handshake uses the Chrome profile")
++		warn("utls fingerprint is not applied over HTTP/3")
+ 	}
+-	chromeParrot := true
++	// WanX: no Chrome profile. Google front ends answer it with the leaf
++	// certificate alone, expecting Chrome's intermediate preloads; Go can't
++	// build the chain, so every dial fails with "certificate signed by
++	// unknown authority" where the OS doesn't fetch intermediates (Android).
++	// Xray's HTTP/3 uses plain quic-go too.
++	chromeParrot := false
+ 	if stdConfig.VerifyConnection != nil {
+ 		// quic-go refuses VerifyConnection with ChromeParrot; certificate
+ 		// verification outranks the look of the handshake.
+ 		chromeParrot = false
+-		warn("disable_sni turns off the Chrome QUIC profile for this server")
+ 	}
+ 	if len(stdConfig.Certificates) > 0 {
+ 		// ChromeParrot refuses Certificates (a server-side field for quic-go); a
+diff --git a/transport/v2rayxhttp/http3_test.go b/transport/v2rayxhttp/http3_test.go
+index bd14816..aac440e 100644
+--- a/transport/v2rayxhttp/http3_test.go
++++ b/transport/v2rayxhttp/http3_test.go
+@@ -61,7 +61,7 @@ func TestHTTP3KeepAlivePeriod(t *testing.T) {
+ 		if quicConfig.KeepAlivePeriod != testCase.want {
+ 			t.Fatalf("KeepAlivePeriod(%v) = %v, want %v", testCase.in, quicConfig.KeepAlivePeriod, testCase.want)
+ 		}
+-		if quicConfig.MaxIdleTimeout != 300*time.Second || quicConfig.MaxIncomingStreams != -1 || !quicConfig.ChromeParrot {
++		if quicConfig.MaxIdleTimeout != 300*time.Second || quicConfig.MaxIncomingStreams != -1 || quicConfig.ChromeParrot {
+ 			t.Fatalf("quic.Config differs from Xray's: %+v", quicConfig)
+ 		}
+ 		if nextProtos := conn.transport.TLSClientConfig.NextProtos; len(nextProtos) != 1 || nextProtos[0] != "h3" {
+diff --git a/transport/v2rayxhttp/std_config_quic_test.go b/transport/v2rayxhttp/std_config_quic_test.go
+index 9b1052d..fbbd870 100644
+--- a/transport/v2rayxhttp/std_config_quic_test.go
++++ b/transport/v2rayxhttp/std_config_quic_test.go
+@@ -98,7 +98,7 @@ func TestSTDConfigForQUICDisableSNI(t *testing.T) {
+ 	if converted.ServerName != "" || converted.VerifyConnection == nil || !converted.InsecureSkipVerify {
+ 		t.Fatalf("disable_sni: ServerName=%q VerifyConnection=%v InsecureSkipVerify=%v", converted.ServerName, converted.VerifyConnection != nil, converted.InsecureSkipVerify)
+ 	}
+-	// The pool then runs this server without the Chrome profile, with a warning.
++	// The pool runs this server without the Chrome profile (WanX: as every one).
+ 	var warnings []string
+ 	newConn, err := newHTTP3Transport(N.SystemDialer, M.ParseSocksaddr("127.0.0.1:443"), newTestTLSClient(t, options), 0, func(message string) { warnings = append(warnings, message) })
+ 	if err != nil {
+@@ -109,7 +109,7 @@ func TestSTDConfigForQUICDisableSNI(t *testing.T) {
+ 	if conn.transport.QUICConfig.ChromeParrot {
+ 		t.Fatal("ChromeParrot left on with VerifyConnection")
+ 	}
+-	if strings.Join(warnings, "\n") != "utls fingerprint is not applied over HTTP/3, the QUIC handshake uses the Chrome profile\ndisable_sni turns off the Chrome QUIC profile for this server" {
++	if strings.Join(warnings, "\n") != "utls fingerprint is not applied over HTTP/3" {
+ 		t.Fatalf("warnings = %q", warnings)
+ 	}
+ }
