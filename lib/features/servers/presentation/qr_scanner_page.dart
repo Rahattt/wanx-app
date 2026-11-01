@@ -26,6 +26,18 @@ class _QrScannerPageState extends State<QrScannerPage> {
 
   static const _frameSize = 240.0;
 
+  @override
+  void initState() {
+    super.initState();
+    // ReaderWidget reports nothing when there is no camera at all
+    // (Simulator, some tablets), which would leave "Starting camera" up.
+    availableCameras().then((cameras) {
+      if (cameras.isEmpty) {
+        _onCamera(null, CameraException('NoCamera', 'No camera found'));
+      }
+    }, onError: (Object _) {});
+  }
+
   void _onCamera(CameraController? controller, Exception? error) {
     if (!mounted) return;
     setState(() {
