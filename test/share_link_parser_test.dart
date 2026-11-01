@@ -191,4 +191,62 @@ void main() {
       expect(ws.extra, isEmpty);
     });
   });
+
+  group('Remnawave / Happ subscriptions', () {
+    test('fragment= becomes the Xray-style fragmentation', () {
+      final s = parser.parse(
+        'vless://u@1.2.3.4:443?fragment=1-2,0-1,tlshello&type=ws&path=%2F'
+        '&host=h.example.com&security=tls&sni=h.example.com&fp=safari#f',
+      );
+      expect(s.obfuscation.xrayFragment, isTrue);
+      expect(s.toOutbound()['tcp_fragment'], {
+        'packets': 'tlshello',
+        'length': '1-2',
+        'interval': '0-1',
+      });
+      // packets first is accepted too; a zero interval is no pause.
+      expect(
+        parser
+            .parse('trojan://p@t.example.com:443?fragment=tlshello,100-200,0#t')
+            .toOutbound()['tcp_fragment'],
+        {'packets': 'tlshello', 'length': '100-200'},
+      );
+      expect(
+        parser
+            .parse('trojan://p@t.example.com:443?fragment=junk#t')
+            .obfuscation
+            .xrayFragment,
+        isFalse,
+      );
+    });
+
+    test('XHTTP extra numbers become the string ranges the core takes', () {
+      final extra = Uri.encodeComponent(
+        '{"xmux":{"cMaxReuseTimes":0,"maxConcurrency":"16-32",'
+        '"maxConnections":0,"hMaxRequestTimes":"600-900"},'
+        '"scMaxEachPostBytes":1000000,"scMinPostsIntervalMs":30,'
+        '"xPaddingBytes":[100,1000]}',
+      );
+      final t = parser
+          .parse('vless://u@x.example.com:443?type=xhttp&extra=$extra#x')
+          .toOutbound()['transport'];
+      expect(t['sc_max_each_post_bytes'], '1000000');
+      expect(t['sc_min_posts_interval_ms'], '30');
+      expect(t['x_padding_bytes'], '100-1000');
+      expect(t['xmux'], {
+        'max_concurrency': '16-32',
+        'h_max_request_times': '600-900',
+      });
+    });
+
+    test('header comment lines are not reported as failures', () {
+      final r = parser.parseMany(
+        '# profile-title: Test\n'
+        '# subscription-userinfo: upload=0; download=0\n'
+        'trojan://p@t.example.com:443#t\n',
+      );
+      expect(r.servers, hasLength(1));
+      expect(r.failures, isEmpty);
+    });
+  });
 }

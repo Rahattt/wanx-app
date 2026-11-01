@@ -95,7 +95,8 @@ class ShareLinkParser {
     final failures = <ParseFailure>[];
     for (final raw in const LineSplitter().convert(body)) {
       final line = raw.trim();
-      if (line.isEmpty) continue;
+      // Comment lines: Happ-style headers (# profile-title: …).
+      if (line.isEmpty || line.startsWith('#')) continue;
       try {
         servers.add(parse(line, group: group, subscriptionId: subscriptionId));
       } on ShareLinkException catch (e) {
@@ -302,6 +303,7 @@ class ShareLinkParser {
     final security = q['security'] ?? 'none';
     final transport = _transport(q);
     return {
+      'tcp_fragment': ?_fragment(q['fragment']),
       if (security == 'tls' || security == 'reality')
         'tls': _tls(
           q,
@@ -336,6 +338,30 @@ class ShareLinkParser {
           'public_key': q['pbk'] ?? '',
           'short_id': q['sid'] ?? '',
         },
+    };
+  }
+
+  /// `fragment=` from Happ/Remnawave links: Xray's fragment as
+  /// `length,interval,packets` (e.g. `1-2,0-1,tlshello`). The `tlshello`
+  /// token also marks `packets` when it comes first.
+  Map<String, dynamic>? _fragment(String? value) {
+    final parts = [
+      for (final p in (value ?? '').split(',')) p.trim().toLowerCase(),
+    ];
+    if (parts.length != 3) return null;
+    final range = RegExp(r'^\d+(-\d+)?$');
+    final [length, interval, packets] = parts.first == 'tlshello'
+        ? [parts[1], parts[2], parts[0]]
+        : parts;
+    if (!range.hasMatch(length) ||
+        !range.hasMatch(interval) ||
+        packets != 'tlshello' && !range.hasMatch(packets)) {
+      return null;
+    }
+    return {
+      'packets': packets,
+      'length': length,
+      if (interval != '0' && interval != '0-0') 'interval': interval,
     };
   }
 
@@ -414,6 +440,22 @@ class ShareLinkParser {
     'hKeepAlivePeriod': 'h_keep_alive_period',
   };
 
+  /// Ranges the core takes only as a string ("N" or "N-M"); Xray also
+  /// writes them as a number or a [min, max] pair.
+  static const _xhttpStringRanges = {
+    'x_padding_bytes',
+    'uplink_chunk_size',
+    'sc_max_each_post_bytes',
+    'sc_min_posts_interval_ms',
+    'session_length',
+  };
+
+  static Object _rangeString(Object value) => switch (value) {
+    num() => '${value.toInt()}',
+    [final num lo, final num hi] => '${lo.toInt()}-${hi.toInt()}',
+    _ => value,
+  };
+
   Map<String, dynamic> _xhttpExtra(Map<String, dynamic> extra) {
     bool isSet(Object? v) => v != null && v != '' && v != 0 && v != false;
     final xmux = extra['xmux'] is Map
@@ -425,7 +467,8 @@ class ShareLinkParser {
         : const <String, dynamic>{};
     return {
       for (final MapEntry(:key, :value) in extra.entries)
-        if (_xhttpKeys[key] case final k? when isSet(value)) k: value,
+        if (_xhttpKeys[key] case final k? when isSet(value))
+          k: _xhttpStringRanges.contains(k) ? _rangeString(value) : value,
       if (xmux.isNotEmpty) 'xmux': xmux,
     };
   }
