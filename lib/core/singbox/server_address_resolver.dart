@@ -75,7 +75,8 @@ class ServerAddressResolver {
             headers['Host'] = host;
           }
           out['transport'] = {...t, 'headers': headers};
-        case 'httpupgrade' when ((t['host'] as String?) ?? '').isEmpty:
+        case 'httpupgrade' || 'xhttp'
+            when ((t['host'] as String?) ?? '').isEmpty:
           out['transport'] = {...t, 'host': host};
         case 'http' when ((t['host'] as List?) ?? const []).isEmpty:
           out['transport'] = {

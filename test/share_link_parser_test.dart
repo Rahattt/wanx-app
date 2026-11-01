@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wanx/core/singbox/config_builder.dart';
+import 'package:wanx/core/singbox/server_address_resolver.dart';
 import 'package:wanx/features/servers/data/share_link_parser.dart';
 import 'package:wanx/features/servers/domain/server.dart';
 import 'package:wanx/features/servers/domain/server_config.dart';
@@ -124,5 +125,70 @@ void main() {
 
     expect(rejectsQuic('trojan://pass@t.example.com:443#t'), isTrue);
     expect(rejectsQuic('hy2://pass@h.example.com:443#h'), isFalse);
+  });
+
+  group('XHTTP', () {
+    test('parses packet-up over HTTP/3 and maps Xray extra keys', () {
+      final s = parser.parse(
+        'vless://11111111-2222-3333-4444-555555555555@x.example.com:443'
+        '?type=xhttp&security=tls&sni=cdn.example.com&alpn=h3&fp=chrome'
+        '&path=%2Fx&host=cdn.example.com&mode=packet-up'
+        '&extra=%7B%22xPaddingBytes%22%3A%22100-1000%22%2C%22noGRPCHeader%22%3Atrue%2C%22sessionIDTable%22%3A%22Base62%22%2C%22sessionIDLength%22%3A%2216-32%22%2C%22scMaxBufferedPosts%22%3A30%2C%22downloadSettings%22%3A%7B%7D%2C%22xmux%22%3A%7B%22maxConnections%22%3A%222-4%22%2C%22maxConcurrency%22%3A0%2C%22hKeepAlivePeriod%22%3A30%7D%7D#X',
+      );
+      expect(s.transport.type, TransportType.xhttp);
+      expect(s.transport.path, '/x');
+      expect(s.transport.host, 'cdn.example.com');
+      expect(s.transport.xhttpMode, 'packet-up');
+      final out = s.toOutbound();
+      expect(out['tls']['alpn'], ['h3']);
+      // Server-only (scMaxBufferedPosts), unsupported (downloadSettings)
+      // and unset (maxConcurrency: 0) keys are dropped.
+      expect(out['transport'], {
+        'type': 'xhttp',
+        'mode': 'packet-up',
+        'x_padding_bytes': '100-1000',
+        'no_grpc_header': true,
+        'session_table': 'Base62',
+        'session_length': '16-32',
+        'xmux': {'max_connections': '2-4', 'h_keep_alive_period': 30},
+        'path': '/x',
+        'host': 'cdn.example.com',
+      });
+      expect(Server.fromJson(s.toJson()).toOutbound(), out);
+    });
+
+    test('splithttp alias, auto mode, VLESS encryption', () {
+      final s = parser.parse(
+        'vless://u@x.example.com:443?type=splithttp&mode=auto&security=reality'
+        '&sni=www.apple.com&pbk=PUB&sid=ab&encryption=mlkem768x25519plus.native.0rtt.K#t',
+      );
+      final out = s.toOutbound();
+      expect(out['transport'], {'type': 'xhttp'});
+      expect(out['encryption'], 'mlkem768x25519plus.native.0rtt.K');
+      expect(
+        parser
+            .parse('vless://u@h.example.com:443?encryption=none#t')
+            .toOutbound()
+            .containsKey('encryption'),
+        isFalse,
+      );
+    });
+
+    test('pinning the address keeps the hostname as Host', () {
+      final s = parser.parse(
+        'vless://u@x.example.com:443?type=xhttp&security=tls#t',
+      );
+      final out = ServerAddressResolver.withAddress(s.toOutbound(), '1.2.3.4');
+      expect(out['server'], '1.2.3.4');
+      expect(out['transport']['host'], 'x.example.com');
+    });
+
+    test('changing the transport type drops the old type options', () {
+      final s = parser.parse(
+        'vless://u@x.example.com:443?type=xhttp&mode=stream-up#t',
+      );
+      final ws = s.transport.copyWith(type: TransportType.ws);
+      expect(ws.extra, isEmpty);
+    });
   });
 }

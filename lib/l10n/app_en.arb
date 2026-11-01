@@ -182,6 +182,7 @@
   "fieldServiceName": "Service name",
   "fieldPath": "Path",
   "fieldHostHeader": "Host header",
+  "fieldXhttpMode": "Mode",
   "sectionTls": "TLS",
   "useTls": "Use TLS",
   "tlsAlwaysOnQuic": "Always on for QUIC protocols",

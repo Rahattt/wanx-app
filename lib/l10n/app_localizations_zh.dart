@@ -225,6 +225,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fieldHostHeader => 'Host 头';
 
   @override
+  String get fieldXhttpMode => '模式';
+
+  @override
   String get sectionTls => 'TLS';
 
   @override

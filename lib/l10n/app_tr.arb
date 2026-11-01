@@ -61,6 +61,7 @@
   "fieldServiceName": "Servis adı",
   "fieldPath": "Yol",
   "fieldHostHeader": "Host başlığı",
+  "fieldXhttpMode": "Mod",
   "sectionTls": "TLS",
   "useTls": "TLS kullan",
   "tlsAlwaysOnQuic": "QUIC protokollerinde her zaman açık",

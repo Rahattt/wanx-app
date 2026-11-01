@@ -470,6 +470,12 @@ abstract class AppLocalizations {
   /// **'Host header'**
   String get fieldHostHeader;
 
+  /// No description provided for @fieldXhttpMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Mode'**
+  String get fieldXhttpMode;
+
   /// No description provided for @sectionTls.
   ///
   /// In en, this message translates to:

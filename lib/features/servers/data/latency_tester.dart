@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 
 import '../domain/server.dart';
+import '../domain/server_config.dart';
 
 class LatencyTestException implements Exception {
   LatencyTestException(this.message);
@@ -32,6 +33,13 @@ class LatencyTester {
     if (server.protocol.isUdpBased) {
       throw LatencyTestException(
         '${server.protocol.label} runs over QUIC/UDP and cannot be tested yet',
+      );
+    }
+    if (server.transport.type == TransportType.xhttp &&
+        server.tls.alpn.length == 1 &&
+        server.tls.alpn.single == 'h3') {
+      throw LatencyTestException(
+        'XHTTP over HTTP/3 runs over QUIC/UDP and cannot be tested yet',
       );
     }
     final watch = Stopwatch()..start();

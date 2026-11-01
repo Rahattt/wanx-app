@@ -105,7 +105,7 @@ abstract final class OutboundCodec {
         path = extra.remove('path') as String? ?? '';
         final hosts = extra.remove('host');
         host = hosts is List ? hosts.join(',') : (hosts?.toString() ?? '');
-      case TransportType.httpupgrade:
+      case TransportType.httpupgrade || TransportType.xhttp:
         path = extra.remove('path') as String? ?? '';
         host = extra.remove('host') as String? ?? '';
       case TransportType.tcp:
@@ -139,6 +139,9 @@ abstract final class OutboundCodec {
         if (t.host.isNotEmpty) out['host'] = t.host.split(',');
       case TransportType.httpupgrade:
         out['path'] = t.path.isEmpty ? '/' : t.path;
+        if (t.host.isNotEmpty) out['host'] = t.host;
+      case TransportType.xhttp:
+        if (t.path.isNotEmpty) out['path'] = t.path;
         if (t.host.isNotEmpty) out['host'] = t.host;
       case TransportType.tcp:
         break;

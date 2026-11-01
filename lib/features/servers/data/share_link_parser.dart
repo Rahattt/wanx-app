@@ -139,6 +139,9 @@ class ShareLinkParser {
       'server_port': _port(uri),
       'uuid': id,
       if ((q['flow'] ?? '').isNotEmpty) 'flow': q['flow'],
+      // VLESS Encryption (post-quantum layer inside VLESS).
+      if ((q['encryption'] ?? 'none') case final e when e != 'none' && e != '')
+        'encryption': e,
       ..._tlsAndTransport(q, uri.host),
     };
   }
@@ -304,7 +307,80 @@ class ShareLinkParser {
         'path': q['path'] ?? '/',
         if ((q['host'] ?? '').isNotEmpty) 'host': q['host'],
       },
+      'xhttp' || 'splithttp' => _xhttp(q),
       _ => null,
+    };
+  }
+
+  /// XHTTP from Xray links: `path`, `host`, `mode`, and `extra` (Xray's
+  /// camelCase JSON of the advanced options). The HTTP version follows from
+  /// the TLS ALPN (`alpn=h3` = HTTP/3), as in Xray.
+  Map<String, dynamic> _xhttp(Map<String, String> q) {
+    Object? extra;
+    if ((q['extra'] ?? '').isNotEmpty) {
+      try {
+        extra = jsonDecode(q['extra']!);
+      } on FormatException {
+        throw ShareLinkException('XHTTP "extra" is not valid JSON');
+      }
+    }
+    final mode = q['mode'] ?? '';
+    return {
+      'type': 'xhttp',
+      if (mode.isNotEmpty && mode != 'auto') 'mode': mode,
+      if ((q['path'] ?? '').isNotEmpty) 'path': q['path'],
+      if ((q['host'] ?? '').isNotEmpty) 'host': q['host'],
+      if (extra is Map) ..._xhttpExtra(extra.cast<String, dynamic>()),
+    };
+  }
+
+  /// Xray XHTTP keys → sing-box-lx keys. Server-only and unsupported keys
+  /// (downloadSettings) are dropped: the core rejects unknown fields.
+  static const _xhttpKeys = {
+    'headers': 'headers',
+    'xPaddingBytes': 'x_padding_bytes',
+    'xPaddingObfsMode': 'x_padding_obfs_mode',
+    'xPaddingKey': 'x_padding_key',
+    'xPaddingHeader': 'x_padding_header',
+    'xPaddingPlacement': 'x_padding_placement',
+    'xPaddingMethod': 'x_padding_method',
+    'uplinkHTTPMethod': 'uplink_http_method',
+    'sessionPlacement': 'session_placement',
+    'sessionKey': 'session_key',
+    'sessionIDTable': 'session_table',
+    'sessionIDLength': 'session_length',
+    'seqPlacement': 'seq_placement',
+    'seqKey': 'seq_key',
+    'uplinkDataPlacement': 'uplink_data_placement',
+    'uplinkDataKey': 'uplink_data_key',
+    'uplinkChunkSize': 'uplink_chunk_size',
+    'noGRPCHeader': 'no_grpc_header',
+    'scMaxEachPostBytes': 'sc_max_each_post_bytes',
+    'scMinPostsIntervalMs': 'sc_min_posts_interval_ms',
+  };
+
+  static const _xmuxKeys = {
+    'maxConcurrency': 'max_concurrency',
+    'maxConnections': 'max_connections',
+    'cMaxReuseTimes': 'c_max_reuse_times',
+    'hMaxRequestTimes': 'h_max_request_times',
+    'hMaxReusableSecs': 'h_max_reusable_secs',
+    'hKeepAlivePeriod': 'h_keep_alive_period',
+  };
+
+  Map<String, dynamic> _xhttpExtra(Map<String, dynamic> extra) {
+    bool isSet(Object? v) => v != null && v != '' && v != 0 && v != false;
+    final xmux = extra['xmux'] is Map
+        ? {
+            for (final MapEntry(:key, :value)
+                in (extra['xmux'] as Map).cast<String, dynamic>().entries)
+              if (_xmuxKeys[key] case final k? when isSet(value)) k: value,
+          }
+        : const <String, dynamic>{};
+    return {
+      for (final MapEntry(:key, :value) in extra.entries)
+        if (_xhttpKeys[key] case final k? when isSet(value)) k: value,
+      if (xmux.isNotEmpty) 'xmux': xmux,
     };
   }
 

@@ -228,6 +228,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get fieldHostHeader => 'En-tête Host';
 
   @override
+  String get fieldXhttpMode => 'Mode';
+
+  @override
   String get sectionTls => 'TLS';
 
   @override

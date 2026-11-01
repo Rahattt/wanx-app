@@ -61,6 +61,7 @@
   "fieldServiceName": "Имя сервиса",
   "fieldPath": "Путь",
   "fieldHostHeader": "Заголовок Host",
+  "fieldXhttpMode": "Режим",
   "sectionTls": "TLS",
   "useTls": "Использовать TLS",
   "tlsAlwaysOnQuic": "Всегда включён для протоколов QUIC",

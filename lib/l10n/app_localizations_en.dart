@@ -228,6 +228,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldHostHeader => 'Host header';
 
   @override
+  String get fieldXhttpMode => 'Mode';
+
+  @override
   String get sectionTls => 'TLS';
 
   @override

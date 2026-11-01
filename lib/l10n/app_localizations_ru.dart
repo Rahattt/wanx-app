@@ -228,6 +228,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get fieldHostHeader => 'Заголовок Host';
 
   @override
+  String get fieldXhttpMode => 'Режим';
+
+  @override
   String get sectionTls => 'TLS';
 
   @override

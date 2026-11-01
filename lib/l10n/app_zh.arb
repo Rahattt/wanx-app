@@ -61,6 +61,7 @@
   "fieldServiceName": "服务名",
   "fieldPath": "路径",
   "fieldHostHeader": "Host 头",
+  "fieldXhttpMode": "模式",
   "sectionTls": "TLS",
   "useTls": "使用 TLS",
   "tlsAlwaysOnQuic": "QUIC 协议始终开启",

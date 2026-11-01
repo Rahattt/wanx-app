@@ -227,6 +227,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get fieldHostHeader => 'Host başlığı';
 
   @override
+  String get fieldXhttpMode => 'Mod';
+
+  @override
   String get sectionTls => 'TLS';
 
   @override

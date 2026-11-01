@@ -8,7 +8,11 @@ enum TransportType {
   ws('WebSocket'),
   grpc('gRPC'),
   httpupgrade('HTTPUpgrade'),
-  http('HTTP/2');
+  http('HTTP/2'),
+
+  /// Xray's XHTTP (SplitHTTP), from the sing-box-lx core. HTTP/3 when the
+  /// TLS ALPN is exactly `h3`.
+  xhttp('XHTTP');
 
   const TransportType(this.label);
 
@@ -32,7 +36,7 @@ class TransportConfig {
 
   final TransportType type;
 
-  /// URL path for ws/httpupgrade/http, service name for gRPC.
+  /// URL path for ws/httpupgrade/http/xhttp, service name for gRPC.
   final String path;
 
   /// Host header (domain fronting target).
@@ -42,14 +46,22 @@ class TransportConfig {
   final int maxEarlyData;
   final Map<String, dynamic> extra;
 
-  TransportConfig copyWith({TransportType? type, String? path, String? host}) =>
-      TransportConfig(
-        type: type ?? this.type,
-        path: path ?? this.path,
-        host: host ?? this.host,
-        maxEarlyData: maxEarlyData,
-        extra: extra,
-      );
+  TransportConfig copyWith({
+    TransportType? type,
+    String? path,
+    String? host,
+    Map<String, dynamic>? extra,
+  }) => TransportConfig(
+    type: type ?? this.type,
+    path: path ?? this.path,
+    host: host ?? this.host,
+    maxEarlyData: maxEarlyData,
+    // Options of one transport type are invalid for another.
+    extra: extra ?? (type == null || type == this.type ? this.extra : const {}),
+  );
+
+  /// XHTTP `mode`; empty = auto.
+  String get xhttpMode => extra['mode'] as String? ?? '';
 
   Map<String, dynamic> toJson() => {
     'type': type.name,

@@ -82,6 +82,9 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
       : _setting('congestion_control');
 
   late TransportType _transportType = _original.transport.type;
+  late String _xhttpMode = _original.transport.xhttpMode.isEmpty
+      ? 'auto'
+      : _original.transport.xhttpMode;
   late bool _tlsEnabled =
       _original.tls.enabled || _original.protocol.isUdpBased;
   late bool _insecure = _original.tls.insecure;
@@ -251,6 +254,13 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
                       if (_transportType != TransportType.tcp &&
                           _transportType != TransportType.grpc)
                         _field(_hostHeader, l10n.fieldHostHeader),
+                      if (_transportType == TransportType.xhttp)
+                        _dropdown<String>(
+                          label: l10n.fieldXhttpMode,
+                          value: _xhttpMode,
+                          items: {for (final m in _xhttpModes) m: m},
+                          onChanged: (m) => setState(() => _xhttpMode = m),
+                        ),
                     ],
                   ),
                 if (protocol.supportsTls)
@@ -304,6 +314,20 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
   }
 
   /// Credentials of [protocol], stored as sing-box outbound fields.
+  static const _xhttpModes = ['auto', 'packet-up', 'stream-up', 'stream-one'];
+
+  TransportConfig _transport() {
+    final t = _original.transport.copyWith(
+      type: _transportType,
+      path: _path.text.trim(),
+      host: _hostHeader.text.trim(),
+    );
+    if (_transportType != TransportType.xhttp) return t;
+    final extra = Map<String, dynamic>.of(t.extra)..remove('mode');
+    if (_xhttpMode != 'auto') extra['mode'] = _xhttpMode;
+    return t.copyWith(extra: extra);
+  }
+
   List<Widget> _authFields(ServerProtocol protocol) {
     Widget uuid() => _field(
       _uuid,
@@ -633,11 +657,7 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
       settings: _buildSettings(),
       group: _original.group,
       subscriptionId: _original.subscriptionId,
-      transport: _original.transport.copyWith(
-        type: _transportType,
-        path: _path.text.trim(),
-        host: _hostHeader.text.trim(),
-      ),
+      transport: _transport(),
       tls: _original.tls.copyWith(
         enabled: tlsEnabled,
         sni: _sni.text.trim(),

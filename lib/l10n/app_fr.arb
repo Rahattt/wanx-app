@@ -61,6 +61,7 @@
   "fieldServiceName": "Nom du service",
   "fieldPath": "Chemin",
   "fieldHostHeader": "En-tête Host",
+  "fieldXhttpMode": "Mode",
   "sectionTls": "TLS",
   "useTls": "Utiliser TLS",
   "tlsAlwaysOnQuic": "Toujours actif pour les protocoles QUIC",
