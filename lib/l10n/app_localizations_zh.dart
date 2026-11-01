@@ -250,6 +250,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wgObfuscationAmneziaServer => '由此 AmneziaWG 服务器设定，无法关闭';
 
   @override
+  String get xrayFragmentation => '分片（Xray）';
+
+  @override
+  String get xrayFragmentationHint =>
+      '像 Xray 的 \"fragment\" 一样拆分发往服务器的前几个数据包。将替代 TLS 分片';
+
+  @override
+  String get xrayPacketsHint => 'tlshello 或写入次数范围，例如 1-3';
+
+  @override
+  String get xrayLengthHint => '每片字节数，例如 100-200';
+
+  @override
+  String get xrayIntervalHint => '间隔毫秒数，例如 10-20；留空 = 不间隔';
+
+  @override
+  String get xrayRangeInvalid => '请输入 N 或 N-M';
+
+  @override
   String get sectionTls => 'TLS';
 
   @override

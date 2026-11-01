@@ -40,6 +40,9 @@ enum ServerProtocol {
   /// ones also make TLS mandatory.
   bool get isUdpBased => this == hysteria2 || this == tuic || isEndpoint;
 
+  /// Connects to the server over TCP, so Xray-style fragmentation applies.
+  bool get supportsTcpFragment => !isUdpBased;
+
   /// Goes into the sing-box config's `endpoints`, not `outbounds`.
   bool get isEndpoint => this == wireguard;
 }

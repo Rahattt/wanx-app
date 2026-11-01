@@ -254,6 +254,26 @@ class AppLocalizationsRu extends AppLocalizations {
       'Задана сервером AmneziaWG, выключить нельзя';
 
   @override
+  String get xrayFragmentation => 'Фрагментация (Xray)';
+
+  @override
+  String get xrayFragmentationHint =>
+      'Режет первые пакеты к серверу как «fragment» в Xray. Заменяет фрагментацию TLS';
+
+  @override
+  String get xrayPacketsHint => 'tlshello или диапазон записей, например 1-3';
+
+  @override
+  String get xrayLengthHint => 'Размер куска в байтах, например 100-200';
+
+  @override
+  String get xrayIntervalHint =>
+      'Пауза в мс, например 10-20; пусто — без паузы';
+
+  @override
+  String get xrayRangeInvalid => 'Укажите N или N-M';
+
+  @override
   String get sectionTls => 'TLS';
 
   @override

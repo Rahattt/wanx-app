@@ -48,6 +48,15 @@ for entry in "${SUBMODULES[@]}"; do
   git submodule update --init --depth 1 "$path"
 done
 
+# WanX's own changes to the core (scripts/sing-box-lx-patches), e.g. the
+# Xray-style tcp_fragment dialer option. Skipped when already applied.
+for patch in "$ROOT"/scripts/sing-box-lx-patches/*.patch; do
+  if git apply --reverse --check "$patch" 2>/dev/null; then
+    continue
+  fi
+  git apply "$patch"
+done
+
 # gomobile shells out to gobind, which go install puts in GOPATH/bin.
 export PATH="$(go env GOPATH)/bin:$PATH"
 # Installs SagerNet's gomobile fork, which libbox requires.

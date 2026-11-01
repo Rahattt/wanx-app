@@ -518,6 +518,42 @@ abstract class AppLocalizations {
   /// **'Set by this AmneziaWG server, can\'t be turned off'**
   String get wgObfuscationAmneziaServer;
 
+  /// No description provided for @xrayFragmentation.
+  ///
+  /// In en, this message translates to:
+  /// **'Fragmentation (Xray)'**
+  String get xrayFragmentation;
+
+  /// No description provided for @xrayFragmentationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Splits the first packets to the server like Xray\'s \"fragment\". Replaces TLS fragmentation'**
+  String get xrayFragmentationHint;
+
+  /// No description provided for @xrayPacketsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'tlshello or a range of writes, e.g. 1-3'**
+  String get xrayPacketsHint;
+
+  /// No description provided for @xrayLengthHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Piece size in bytes, e.g. 100-200'**
+  String get xrayLengthHint;
+
+  /// No description provided for @xrayIntervalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause in ms, e.g. 10-20; empty = no pause'**
+  String get xrayIntervalHint;
+
+  /// No description provided for @xrayRangeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Use N or N-M'**
+  String get xrayRangeInvalid;
+
   /// No description provided for @sectionTls.
   ///
   /// In en, this message translates to:

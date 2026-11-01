@@ -74,6 +74,12 @@ from share links, base64 or sing-box JSON subscriptions, or entered by hand.
   handshake, with S/H left at the WireGuard defaults, so any WireGuard
   server accepts it. It can be turned off per server. Profiles whose AWG
   parameters must match an AmneziaWG server keep them.
+- **Fragmentation**, per server: sing-box's own TLS fragmentation, or the
+  Xray-style one (`packets` = `tlshello` or a range of writes, `length`,
+  `interval`, as Xray's "fragment"; default `tlshello`/`100-200`/`10-20`).
+  The Xray-style splitting is a WanX patch to the core (`tcp_fragment` on
+  the outbound's dialer) and works for every TCP-based protocol; one of the
+  two is used at a time.
 
 ## Linking the sing-box core
 
@@ -85,7 +91,9 @@ scripts/build_libbox.sh apple     # → ios/Frameworks/Libbox.xcframework
 The core is built from a pinned sing-box-lx release: the script checks the
 tag and the four dependency submodules it swaps in (utls, gvisor, sing-tun,
 wireguard-go) and fetches only those. To update, change `LX_VERSION`,
-`LX_COMMIT` and `SUBMODULES` together.
+`LX_COMMIT` and `SUBMODULES` together. WanX's own changes to the core live in
+`scripts/sing-box-lx-patches/` and are applied on top (skipped when already
+applied); refresh them when updating the fork.
 
 Requires Go, Xcode (apple) and the Android NDK (android):
 `ANDROID_NDK_HOME=~/Library/Android/sdk/ndk/<version>`. The libbox-backed

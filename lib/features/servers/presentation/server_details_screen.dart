@@ -106,6 +106,16 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
   late bool _fragment = _original.obfuscation.fragment;
   late bool _recordFragment = _original.obfuscation.recordFragment;
   late bool _reality = _original.obfuscation.reality;
+  late bool _xrayFragment = _original.obfuscation.xrayFragment;
+  late final _xrayPackets = TextEditingController(
+    text: _original.obfuscation.xrayFragmentPackets,
+  );
+  late final _xrayLength = TextEditingController(
+    text: _original.obfuscation.xrayFragmentLength,
+  );
+  late final _xrayInterval = TextEditingController(
+    text: _original.obfuscation.xrayFragmentInterval,
+  );
   var _advancedOpen = false;
 
   bool get _creating => widget.newProtocol != null;
@@ -188,6 +198,9 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
       _wgPeerKey,
       _wgPresharedKey,
       _wgMtu,
+      _xrayPackets,
+      _xrayLength,
+      _xrayInterval,
     ]) {
       c.dispose();
     }
@@ -324,7 +337,8 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
                       ),
                     ],
                   ),
-                if (protocol.supportsTls) _advancedSection(),
+                if (protocol.supportsTls || protocol.supportsTcpFragment)
+                  _advancedSection(protocol),
               ],
             );
           },
@@ -552,7 +566,7 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
   }
 
   /// Collapsed by default so circumvention options aren't front and centre.
-  Widget _advancedSection() {
+  Widget _advancedSection(ServerProtocol protocol) {
     final theme = Theme.of(context);
     final muted = theme.colorScheme.onSurfaceVariant;
     return Padding(
@@ -608,20 +622,26 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
             _Revealed(
               visible: _advancedOpen,
               children: [
-                _dropdown<UtlsFingerprint>(
-                  label: l10n.utlsFingerprint,
-                  value: _fingerprint,
-                  items: {for (final f in UtlsFingerprint.values) f: f.label},
-                  onChanged: (f) => setState(() => _fingerprint = f),
-                ),
-                _SwitchRow(
-                  title: l10n.tlsFragmentation,
-                  subtitle: l10n.tlsFragmentationHint,
-                  value: _fragment,
-                  onChanged: (v) => setState(() => _fragment = v),
-                ),
+                if (protocol.supportsTls)
+                  _dropdown<UtlsFingerprint>(
+                    label: l10n.utlsFingerprint,
+                    value: _fingerprint,
+                    items: {for (final f in UtlsFingerprint.values) f: f.label},
+                    onChanged: (f) => setState(() => _fingerprint = f),
+                  ),
+                if (protocol.supportsTls)
+                  _SwitchRow(
+                    title: l10n.tlsFragmentation,
+                    subtitle: l10n.tlsFragmentationHint,
+                    value: _fragment,
+                    // One splitter at a time: both would cut the same bytes.
+                    onChanged: (v) => setState(() {
+                      _fragment = v;
+                      if (v) _xrayFragment = false;
+                    }),
+                  ),
                 _Revealed(
-                  visible: _fragment,
+                  visible: _fragment && protocol.supportsTls,
                   children: [
                     _SwitchRow(
                       title: l10n.recordFragmentation,
@@ -638,13 +658,48 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
                     ),
                   ],
                 ),
-                _SwitchRow(
-                  title: l10n.reality,
-                  value: _reality,
-                  onChanged: (v) => setState(() => _reality = v),
-                ),
+                if (protocol.supportsTcpFragment) ...[
+                  _SwitchRow(
+                    title: l10n.xrayFragmentation,
+                    subtitle: l10n.xrayFragmentationHint,
+                    value: _xrayFragment,
+                    onChanged: (v) => setState(() {
+                      _xrayFragment = v;
+                      if (v) _fragment = false;
+                    }),
+                  ),
+                  _Revealed(
+                    visible: _xrayFragment,
+                    children: [
+                      _field(
+                        _xrayPackets,
+                        'packets',
+                        hint: l10n.xrayPacketsHint,
+                        validator: _xrayPacketsValid,
+                      ),
+                      _field(
+                        _xrayLength,
+                        'length',
+                        hint: l10n.xrayLengthHint,
+                        validator: (v) => _rangeValid(v, required: true),
+                      ),
+                      _field(
+                        _xrayInterval,
+                        'interval',
+                        hint: l10n.xrayIntervalHint,
+                        validator: (v) => _rangeValid(v, required: false),
+                      ),
+                    ],
+                  ),
+                ],
+                if (protocol.supportsTls)
+                  _SwitchRow(
+                    title: l10n.reality,
+                    value: _reality,
+                    onChanged: (v) => setState(() => _reality = v),
+                  ),
                 _Revealed(
-                  visible: _reality,
+                  visible: _reality && protocol.supportsTls,
                   children: [
                     _field(_realityKey, l10n.publicKey, validator: _required),
                     _field(_realityShortId, l10n.shortId, hint: l10n.optional),
@@ -654,6 +709,28 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
             ),
           ),
     );
+  }
+
+  static final _range = RegExp(r'^\d+(-\d+)?$');
+
+  /// The core's tcp_fragment ranges: "N" or "N-M", M ≥ N.
+  String? _rangeValid(String? value, {required bool required}) {
+    if (!_xrayFragment) return null;
+    final v = (value ?? '').trim();
+    if (v.isEmpty) return required ? l10n.required : null;
+    if (!_range.hasMatch(v)) return l10n.xrayRangeInvalid;
+    final [lo, ...hi] = v.split('-').map(int.parse).toList();
+    if (hi.isNotEmpty && hi.single < lo) return l10n.xrayRangeInvalid;
+    if (required && lo == 0) return l10n.xrayRangeInvalid;
+    return null;
+  }
+
+  String? _xrayPacketsValid(String? value) {
+    final v = (value ?? '').trim().toLowerCase();
+    if (!_xrayFragment || v == 'tlshello') return null;
+    if (v.isEmpty) return l10n.required;
+    if (_rangeValid(v, required: true) != null) return l10n.xrayRangeInvalid;
+    return null;
   }
 
   /// Borderless input sitting directly in a grouped card row.
@@ -777,6 +854,10 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
         reality: _reality,
         realityPublicKey: _reality ? _realityKey.text.trim() : '',
         realityShortId: _reality ? _realityShortId.text.trim() : '',
+        xrayFragment: _xrayFragment && _protocol.supportsTcpFragment,
+        xrayFragmentPackets: _xrayPackets.text.trim(),
+        xrayFragmentLength: _xrayLength.text.trim(),
+        xrayFragmentInterval: _xrayInterval.text.trim(),
       ),
       // latencyMs left null: the old measurement no longer applies.
     );

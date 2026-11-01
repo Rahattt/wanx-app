@@ -142,7 +142,9 @@ enum UtlsFingerprint {
 }
 
 /// Censorship-circumvention options. Mapped onto sing-box `tls` fields:
-/// `utls`, `fragment`, `record_fragment`, `fragment_fallback_delay`, `reality`.
+/// `utls`, `fragment`, `record_fragment`, `fragment_fallback_delay`,
+/// `reality`; the Xray-style fragmentation onto the outbound's
+/// `tcp_fragment` (a WanX patch to the core's dialer).
 class ObfuscationConfig {
   const ObfuscationConfig({
     this.fingerprint = UtlsFingerprint.none,
@@ -152,7 +154,15 @@ class ObfuscationConfig {
     this.reality = false,
     this.realityPublicKey = '',
     this.realityShortId = '',
+    this.xrayFragment = false,
+    this.xrayFragmentPackets = defaultXrayFragmentPackets,
+    this.xrayFragmentLength = defaultXrayFragmentLength,
+    this.xrayFragmentInterval = defaultXrayFragmentInterval,
   });
+
+  static const defaultXrayFragmentPackets = 'tlshello';
+  static const defaultXrayFragmentLength = '100-200';
+  static const defaultXrayFragmentInterval = '10-20';
 
   final UtlsFingerprint fingerprint;
 
@@ -170,6 +180,16 @@ class ObfuscationConfig {
   final String realityPublicKey;
   final String realityShortId;
 
+  /// Splits the first writes to the server the way Xray's "fragment" does:
+  /// [xrayFragmentPackets] is `tlshello` (the ClientHello as several TLS
+  /// records) or a `N-M` range of writes; [xrayFragmentLength] is the piece
+  /// size in bytes and [xrayFragmentInterval] the pause in ms, both ranges.
+  /// Replaces the sing-box [fragment] options when on.
+  final bool xrayFragment;
+  final String xrayFragmentPackets;
+  final String xrayFragmentLength;
+  final String xrayFragmentInterval;
+
   Map<String, dynamic> toJson() => {
     'fingerprint': fingerprint.name,
     'fragment': fragment,
@@ -178,18 +198,30 @@ class ObfuscationConfig {
     'reality': reality,
     'realityPublicKey': realityPublicKey,
     'realityShortId': realityShortId,
+    'xrayFragment': xrayFragment,
+    'xrayFragmentPackets': xrayFragmentPackets,
+    'xrayFragmentLength': xrayFragmentLength,
+    'xrayFragmentInterval': xrayFragmentInterval,
   };
 
-  factory ObfuscationConfig.fromJson(Map<String, dynamic> json) =>
-      ObfuscationConfig(
-        fingerprint: UtlsFingerprint.fromName(json['fingerprint'] as String?),
-        fragment: json['fragment'] as bool? ?? false,
-        recordFragment: json['recordFragment'] as bool? ?? false,
-        fragmentFallbackDelayMs: json['fragmentFallbackDelayMs'] as int?,
-        reality: json['reality'] as bool? ?? false,
-        realityPublicKey: json['realityPublicKey'] as String? ?? '',
-        realityShortId: json['realityShortId'] as String? ?? '',
-      );
+  factory ObfuscationConfig.fromJson(
+    Map<String, dynamic> json,
+  ) => ObfuscationConfig(
+    fingerprint: UtlsFingerprint.fromName(json['fingerprint'] as String?),
+    fragment: json['fragment'] as bool? ?? false,
+    recordFragment: json['recordFragment'] as bool? ?? false,
+    fragmentFallbackDelayMs: json['fragmentFallbackDelayMs'] as int?,
+    reality: json['reality'] as bool? ?? false,
+    realityPublicKey: json['realityPublicKey'] as String? ?? '',
+    realityShortId: json['realityShortId'] as String? ?? '',
+    xrayFragment: json['xrayFragment'] as bool? ?? false,
+    xrayFragmentPackets:
+        json['xrayFragmentPackets'] as String? ?? defaultXrayFragmentPackets,
+    xrayFragmentLength:
+        json['xrayFragmentLength'] as String? ?? defaultXrayFragmentLength,
+    xrayFragmentInterval:
+        json['xrayFragmentInterval'] as String? ?? defaultXrayFragmentInterval,
+  );
 }
 
 Map<String, dynamic> _map(Object? value) =>

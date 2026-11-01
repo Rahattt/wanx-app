@@ -24,6 +24,7 @@ abstract final class OutboundCodec {
     'server_port',
     'tls',
     'transport',
+    'tcp_fragment',
   };
 
   static Server fromOutbound(
@@ -82,7 +83,7 @@ abstract final class OutboundCodec {
         tlsMap,
         forceEnabled: protocol.isUdpBased && protocol.supportsTls,
       ),
-      obfuscation: _obfuscationFrom(tlsMap),
+      obfuscation: _obfuscationFrom(tlsMap, _map(outbound['tcp_fragment'])),
       group: group,
       subscriptionId: subscriptionId,
     );
@@ -107,6 +108,13 @@ abstract final class OutboundCodec {
       ...s.settings,
       if (s.protocol.supportsTls && (s.tls.enabled || s.protocol.isUdpBased))
         'tls': _tlsTo(s.tls, s.obfuscation),
+      if (s.protocol.supportsTcpFragment && s.obfuscation.xrayFragment)
+        'tcp_fragment': {
+          'packets': s.obfuscation.xrayFragmentPackets,
+          'length': s.obfuscation.xrayFragmentLength,
+          if (s.obfuscation.xrayFragmentInterval.isNotEmpty)
+            'interval': s.obfuscation.xrayFragmentInterval,
+        },
       if (s.protocol.supportsTransport && s.transport.type != TransportType.tcp)
         'transport': _transportTo(s.transport),
     };
@@ -216,10 +224,22 @@ abstract final class OutboundCodec {
     );
   }
 
-  static ObfuscationConfig _obfuscationFrom(Map<String, dynamic> t) {
+  static ObfuscationConfig _obfuscationFrom(
+    Map<String, dynamic> t,
+    Map<String, dynamic> tcpFragment,
+  ) {
     final utls = _map(t['utls']);
     final reality = _map(t['reality']);
     return ObfuscationConfig(
+      xrayFragment: tcpFragment.isNotEmpty,
+      xrayFragmentPackets:
+          tcpFragment['packets'] as String? ??
+          ObfuscationConfig.defaultXrayFragmentPackets,
+      xrayFragmentLength:
+          '${tcpFragment['length'] ?? ObfuscationConfig.defaultXrayFragmentLength}',
+      xrayFragmentInterval: tcpFragment.isEmpty
+          ? ObfuscationConfig.defaultXrayFragmentInterval
+          : '${tcpFragment['interval'] ?? ''}',
       fingerprint: utls['enabled'] == true
           ? UtlsFingerprint.fromName(utls['fingerprint'] as String? ?? 'chrome')
           : UtlsFingerprint.none,
@@ -245,9 +265,12 @@ abstract final class OutboundCodec {
       if (t.alpn.isNotEmpty) 'alpn': t.alpn,
       if (fingerprint != UtlsFingerprint.none)
         'utls': {'enabled': true, 'fingerprint': fingerprint.name},
-      if (o.fragment) 'fragment': true,
-      if (o.recordFragment) 'record_fragment': true,
-      if ((o.fragment || o.recordFragment) && o.fragmentFallbackDelayMs != null)
+      // The Xray-style splitting replaces sing-box's own.
+      if (o.fragment && !o.xrayFragment) 'fragment': true,
+      if (o.recordFragment && !o.xrayFragment) 'record_fragment': true,
+      if ((o.fragment || o.recordFragment) &&
+          !o.xrayFragment &&
+          o.fragmentFallbackDelayMs != null)
         'fragment_fallback_delay': '${o.fragmentFallbackDelayMs}ms',
       if (o.reality)
         'reality': {

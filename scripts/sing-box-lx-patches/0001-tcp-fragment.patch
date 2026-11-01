@@ -1,0 +1,380 @@
+diff --git a/common/dialer/dialer.go b/common/dialer/dialer.go
+index 7c0b9b5..7f4d0bf 100644
+--- a/common/dialer/dialer.go
++++ b/common/dialer/dialer.go
+@@ -98,6 +98,12 @@ func NewWithOptions(options Options) (N.Dialer, error) {
+ 			time.Duration(dialOptions.FallbackDelay),
+ 		)
+ 	}
++	if dialOptions.TCPFragment != nil {
++		dialer, err = NewTCPFragmentDialer(dialer, *dialOptions.TCPFragment)
++		if err != nil {
++			return nil, err
++		}
++	}
+ 	return dialer, nil
+ }
+ 
+diff --git a/common/dialer/tcp_fragment_wanx.go b/common/dialer/tcp_fragment_wanx.go
+new file mode 100644
+index 0000000..b9a5a78
+--- /dev/null
++++ b/common/dialer/tcp_fragment_wanx.go
+@@ -0,0 +1,206 @@
++package dialer
++
++import (
++	"context"
++	"crypto/rand"
++	"math/big"
++	"net"
++	"strconv"
++	"strings"
++	"sync"
++	"time"
++
++	"github.com/sagernet/sing-box/option"
++	E "github.com/sagernet/sing/common/exceptions"
++	M "github.com/sagernet/sing/common/metadata"
++	N "github.com/sagernet/sing/common/network"
++)
++
++// NewTCPFragmentDialer wraps the TCP connections of dialer so their first
++// writes are split as Xray's freedom "fragment" splits them (added by WanX).
++func NewTCPFragmentDialer(dialer N.Dialer, options option.TCPFragmentOptions) (N.Dialer, error) {
++	config, err := parseTCPFragment(options)
++	if err != nil {
++		return nil, E.Cause(err, "tcp_fragment")
++	}
++	return &tcpFragmentDialer{Dialer: dialer, config: config}, nil
++}
++
++type fragmentRange struct{ min, max int64 }
++
++func (r fragmentRange) roll() int64 {
++	if r.max <= r.min {
++		return r.min
++	}
++	n, err := rand.Int(rand.Reader, big.NewInt(r.max-r.min+1))
++	if err != nil {
++		return r.min
++	}
++	return r.min + n.Int64()
++}
++
++type tcpFragmentConfig struct {
++	tlsHello bool
++	// Writes from..to (1-based) are split; from == 0 splits every write.
++	from, to int64
++	length   fragmentRange
++	interval fragmentRange
++	maxSplit fragmentRange
++}
++
++func parseFragmentRange(name, value string) (fragmentRange, error) {
++	value = strings.TrimSpace(value)
++	if value == "" {
++		return fragmentRange{}, nil
++	}
++	lo, hi, found := strings.Cut(value, "-")
++	min, err := strconv.ParseInt(strings.TrimSpace(lo), 10, 64)
++	if err != nil || min < 0 {
++		return fragmentRange{}, E.New("invalid ", name, ": ", value)
++	}
++	max := min
++	if found {
++		max, err = strconv.ParseInt(strings.TrimSpace(hi), 10, 64)
++		if err != nil || max < min {
++			return fragmentRange{}, E.New("invalid ", name, ": ", value)
++		}
++	}
++	return fragmentRange{min, max}, nil
++}
++
++func parseTCPFragment(options option.TCPFragmentOptions) (config tcpFragmentConfig, err error) {
++	switch packets := strings.ToLower(strings.TrimSpace(options.Packets)); packets {
++	case "tlshello":
++		config.tlsHello = true
++	case "":
++	default:
++		var r fragmentRange
++		r, err = parseFragmentRange("packets", packets)
++		if err != nil {
++			return
++		}
++		if r.min == 0 {
++			return config, E.New("packets must start at 1")
++		}
++		config.from, config.to = r.min, r.max
++	}
++	if config.length, err = parseFragmentRange("length", options.Length); err != nil {
++		return
++	}
++	if config.length.min == 0 {
++		return config, E.New("length must be at least 1")
++	}
++	if config.interval, err = parseFragmentRange("interval", options.Interval); err != nil {
++		return
++	}
++	config.maxSplit, err = parseFragmentRange("max_split", options.MaxSplit)
++	return
++}
++
++type tcpFragmentDialer struct {
++	N.Dialer
++	config tcpFragmentConfig
++}
++
++func (d *tcpFragmentDialer) DialContext(ctx context.Context, network string, destination M.Socksaddr) (net.Conn, error) {
++	conn, err := d.Dialer.DialContext(ctx, network, destination)
++	if err != nil || N.NetworkName(network) != N.NetworkTCP {
++		return conn, err
++	}
++	return &tcpFragmentConn{Conn: conn, config: &d.config}, nil
++}
++
++// tcpFragmentConn hides the inner connection's vectorised and buffer
++// writers on purpose: every write must pass through Write.
++type tcpFragmentConn struct {
++	net.Conn
++	config *tcpFragmentConfig
++	access sync.Mutex
++	count  int64
++}
++
++func (c *tcpFragmentConn) Write(b []byte) (int, error) {
++	c.access.Lock()
++	defer c.access.Unlock()
++	c.count++
++	if c.config.tlsHello {
++		if c.count == 1 {
++			return c.writeTLSHello(b)
++		}
++		return c.Conn.Write(b)
++	}
++	if c.config.from != 0 && (c.count < c.config.from || c.count > c.config.to) {
++		return c.Conn.Write(b)
++	}
++	return c.writePieces(b)
++}
++
++func (c *tcpFragmentConn) pause() {
++	if ms := c.config.interval.roll(); ms > 0 {
++		time.Sleep(time.Duration(ms) * time.Millisecond)
++	}
++}
++
++func (c *tcpFragmentConn) writePieces(b []byte) (int, error) {
++	maxSplit := c.config.maxSplit.roll()
++	var written int
++	for pieces := int64(1); written < len(b); pieces++ {
++		end := written + int(c.config.length.roll())
++		if end > len(b) || maxSplit > 0 && pieces >= maxSplit {
++			end = len(b)
++		}
++		n, err := c.Conn.Write(b[written:end])
++		written += n
++		if err != nil {
++			return written, err
++		}
++		c.pause()
++	}
++	return written, nil
++}
++
++// writeTLSHello re-frames a TLS handshake record (the ClientHello) as
++// several smaller records. Anything else is written unchanged.
++func (c *tcpFragmentConn) writeTLSHello(b []byte) (int, error) {
++	const header = 5
++	if len(b) <= header || b[0] != 22 {
++		return c.Conn.Write(b)
++	}
++	recordLen := header + (int(b[3])<<8 | int(b[4]))
++	if len(b) < recordLen {
++		return c.Conn.Write(b)
++	}
++	payload := b[header:recordLen]
++	combine := c.config.interval.max == 0
++	maxSplit := c.config.maxSplit.roll()
++	var combined []byte
++	for from, pieces := 0, int64(1); from < len(payload); pieces++ {
++		to := from + int(c.config.length.roll())
++		if to > len(payload) || maxSplit > 0 && pieces >= maxSplit {
++			to = len(payload)
++		}
++		record := make([]byte, header+to-from)
++		copy(record, b[:3])
++		record[3], record[4] = byte((to-from)>>8), byte(to-from)
++		copy(record[header:], payload[from:to])
++		from = to
++		if combine {
++			combined = append(combined, record...)
++			continue
++		}
++		if _, err := c.Conn.Write(record); err != nil {
++			return 0, err
++		}
++		c.pause()
++	}
++	if combine {
++		if _, err := c.Conn.Write(combined); err != nil {
++			return 0, err
++		}
++	}
++	if len(b) > recordLen {
++		n, err := c.Conn.Write(b[recordLen:])
++		return recordLen + n, err
++	}
++	return len(b), nil
++}
+diff --git a/common/dialer/tcp_fragment_wanx_test.go b/common/dialer/tcp_fragment_wanx_test.go
+new file mode 100644
+index 0000000..43e77f9
+--- /dev/null
++++ b/common/dialer/tcp_fragment_wanx_test.go
+@@ -0,0 +1,109 @@
++package dialer
++
++import (
++	"bytes"
++	"net"
++	"testing"
++
++	"github.com/sagernet/sing-box/option"
++)
++
++type recordingConn struct {
++	net.Conn
++	writes [][]byte
++}
++
++func (c *recordingConn) Write(b []byte) (int, error) {
++	c.writes = append(c.writes, append([]byte(nil), b...))
++	return len(b), nil
++}
++
++func newTestFragmentConn(t *testing.T, options option.TCPFragmentOptions) (*tcpFragmentConn, *recordingConn) {
++	t.Helper()
++	config, err := parseTCPFragment(options)
++	if err != nil {
++		t.Fatal(err)
++	}
++	inner := &recordingConn{}
++	return &tcpFragmentConn{Conn: inner, config: &config}, inner
++}
++
++func fakeHello(size int) []byte {
++	record := []byte{22, 3, 1, byte(size >> 8), byte(size)}
++	for i := 0; i < size; i++ {
++		record = append(record, byte(i))
++	}
++	return record
++}
++
++func TestTCPFragmentTLSHello(t *testing.T) {
++	conn, inner := newTestFragmentConn(t, option.TCPFragmentOptions{Packets: "tlshello", Length: "10-20", Interval: "1"})
++	hello := fakeHello(300)
++	tail := []byte("after")
++	if n, err := conn.Write(append(append([]byte(nil), hello...), tail...)); err != nil || n != len(hello)+len(tail) {
++		t.Fatalf("write: %d %v", n, err)
++	}
++	var payload []byte
++	records := inner.writes[:len(inner.writes)-1]
++	for i, w := range records {
++		if w[0] != 22 || w[1] != 3 || w[2] != 1 {
++			t.Fatalf("record header %x", w[:5])
++		}
++		size := int(w[3])<<8 | int(w[4])
++		last := i == len(records)-1
++		if size != len(w)-5 || size > 20 || size < 10 && !last {
++			t.Fatalf("record %d size %d", i, size)
++		}
++		payload = append(payload, w[5:]...)
++	}
++	if !bytes.Equal(payload, hello[5:]) {
++		t.Fatal("records don't add up to the ClientHello")
++	}
++	if !bytes.Equal(inner.writes[len(inner.writes)-1], tail) {
++		t.Fatal("bytes after the record were lost")
++	}
++	// Only the first write is touched.
++	conn.Write([]byte("second"))
++	if !bytes.Equal(inner.writes[len(inner.writes)-1], []byte("second")) {
++		t.Fatal("second write was split")
++	}
++}
++
++func TestTCPFragmentTLSHelloCombined(t *testing.T) {
++	conn, inner := newTestFragmentConn(t, option.TCPFragmentOptions{Packets: "tlshello", Length: "50"})
++	conn.Write(fakeHello(120))
++	if len(inner.writes) != 1 || len(inner.writes[0]) != 3*5+120 {
++		t.Fatalf("want 3 records in one write, got %d writes", len(inner.writes))
++	}
++}
++
++func TestTCPFragmentPackets(t *testing.T) {
++	conn, inner := newTestFragmentConn(t, option.TCPFragmentOptions{Packets: "2-3", Length: "4", MaxSplit: "3"})
++	conn.Write([]byte("first-write"))
++	conn.Write([]byte("0123456789abcdef"))
++	conn.Write([]byte("abc"))
++	conn.Write([]byte("fourth-write"))
++	want := []string{"first-write", "0123", "4567", "89abcdef", "abc", "fourth-write"}
++	if len(inner.writes) != len(want) {
++		t.Fatalf("writes %q", inner.writes)
++	}
++	for i, w := range want {
++		if string(inner.writes[i]) != w {
++			t.Fatalf("write %d = %q, want %q", i, inner.writes[i], w)
++		}
++	}
++}
++
++func TestTCPFragmentOptionErrors(t *testing.T) {
++	for _, o := range []option.TCPFragmentOptions{
++		{Length: ""},
++		{Length: "0"},
++		{Length: "20-10"},
++		{Packets: "0-3", Length: "10"},
++		{Packets: "x", Length: "10"},
++	} {
++		if _, err := parseTCPFragment(o); err == nil {
++			t.Errorf("%+v accepted", o)
++		}
++	}
++}
+diff --git a/option/outbound.go b/option/outbound.go
+index 5780929..2be5935 100644
+--- a/option/outbound.go
++++ b/option/outbound.go
+@@ -106,6 +106,7 @@ type AbstractDialerOptions struct {
+ 	NetworkType                badoption.Listable[InterfaceType] `json:"network_type,omitempty"`
+ 	FallbackNetworkType        badoption.Listable[InterfaceType] `json:"fallback_network_type,omitempty"`
+ 	FallbackDelay              badoption.Duration                `json:"fallback_delay,omitempty"`
++	TCPFragment                *TCPFragmentOptions               `json:"tcp_fragment,omitempty"`
+ 
+ 	// Deprecated: migrated to domain resolver
+ 	DomainStrategy DomainStrategy `json:"domain_strategy,omitempty" schema:"omit"`
+diff --git a/option/tcp_fragment_wanx.go b/option/tcp_fragment_wanx.go
+new file mode 100644
+index 0000000..b366dac
+--- /dev/null
++++ b/option/tcp_fragment_wanx.go
+@@ -0,0 +1,18 @@
++package option
++
++// TCPFragmentOptions splits the first writes of a TCP connection the way
++// Xray's freedom "fragment" does (added by WanX). Ranges are "min-max" or a
++// single number.
++type TCPFragmentOptions struct {
++	// "tlshello": split the TLS ClientHello into several TLS records, one
++	// per write. "N-M": split writes N to M (counted from 1) into raw TCP
++	// writes. Empty: every write.
++	Packets string `json:"packets,omitempty"`
++	// Size of each piece, in bytes.
++	Length string `json:"length"`
++	// Pause after each piece, in milliseconds. With "tlshello" and no
++	// interval the records go out in one write (record splitting only).
++	Interval string `json:"interval,omitempty"`
++	// Maximum number of pieces per write; the last one takes the rest.
++	MaxSplit string `json:"max_split,omitempty"`
++}

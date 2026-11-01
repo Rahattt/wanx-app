@@ -254,6 +254,25 @@ class AppLocalizationsFr extends AppLocalizations {
       'Définie par ce serveur AmneziaWG, impossible à désactiver';
 
   @override
+  String get xrayFragmentation => 'Fragmentation (Xray)';
+
+  @override
+  String get xrayFragmentationHint =>
+      'Découpe les premiers paquets vers le serveur comme le « fragment » de Xray. Remplace la fragmentation TLS';
+
+  @override
+  String get xrayPacketsHint => 'tlshello ou une plage d\'écritures, ex. 1-3';
+
+  @override
+  String get xrayLengthHint => 'Taille des morceaux en octets, ex. 100-200';
+
+  @override
+  String get xrayIntervalHint => 'Pause en ms, ex. 10-20 ; vide = sans pause';
+
+  @override
+  String get xrayRangeInvalid => 'Saisissez N ou N-M';
+
+  @override
   String get sectionTls => 'TLS';
 
   @override

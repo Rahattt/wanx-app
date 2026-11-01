@@ -254,6 +254,25 @@ class AppLocalizationsEn extends AppLocalizations {
       'Set by this AmneziaWG server, can\'t be turned off';
 
   @override
+  String get xrayFragmentation => 'Fragmentation (Xray)';
+
+  @override
+  String get xrayFragmentationHint =>
+      'Splits the first packets to the server like Xray\'s \"fragment\". Replaces TLS fragmentation';
+
+  @override
+  String get xrayPacketsHint => 'tlshello or a range of writes, e.g. 1-3';
+
+  @override
+  String get xrayLengthHint => 'Piece size in bytes, e.g. 100-200';
+
+  @override
+  String get xrayIntervalHint => 'Pause in ms, e.g. 10-20; empty = no pause';
+
+  @override
+  String get xrayRangeInvalid => 'Use N or N-M';
+
+  @override
   String get sectionTls => 'TLS';
 
   @override

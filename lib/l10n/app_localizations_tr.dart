@@ -253,6 +253,25 @@ class AppLocalizationsTr extends AppLocalizations {
       'Bu AmneziaWG sunucusu tarafından ayarlandı, kapatılamaz';
 
   @override
+  String get xrayFragmentation => 'Parçalama (Xray)';
+
+  @override
+  String get xrayFragmentationHint =>
+      'Sunucuya giden ilk paketleri Xray\'in \"fragment\" özelliği gibi böler. TLS parçalamanın yerini alır';
+
+  @override
+  String get xrayPacketsHint => 'tlshello veya yazma aralığı, örn. 1-3';
+
+  @override
+  String get xrayLengthHint => 'Parça boyutu (bayt), örn. 100-200';
+
+  @override
+  String get xrayIntervalHint => 'Bekleme (ms), örn. 10-20; boş = beklemesiz';
+
+  @override
+  String get xrayRangeInvalid => 'N veya N-M girin';
+
+  @override
   String get sectionTls => 'TLS';
 
   @override

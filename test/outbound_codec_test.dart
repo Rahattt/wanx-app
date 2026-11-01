@@ -131,4 +131,63 @@ void main() {
       ),
     );
   });
+
+  group('Xray-style fragmentation', () {
+    final base = <String, dynamic>{
+      'type': 'trojan',
+      'server': 't.example.com',
+      'server_port': 443,
+      'password': 'p',
+      'tls': {'enabled': true, 'fragment': true, 'record_fragment': true},
+      'tcp_fragment': {
+        'packets': 'tlshello',
+        'length': '100-200',
+        'interval': '10-20',
+      },
+    };
+
+    test('round-trips and replaces the sing-box TLS fragmentation', () {
+      final s = OutboundCodec.fromOutbound(base);
+      expect(s.obfuscation.xrayFragment, isTrue);
+      expect(s.settings.containsKey('tcp_fragment'), isFalse);
+      final out = s.toOutbound();
+      expect(out['tcp_fragment'], base['tcp_fragment']);
+      expect(out['tls'].containsKey('fragment'), isFalse);
+      expect(out['tls'].containsKey('record_fragment'), isFalse);
+      expect(Server.fromJson(s.toJson()).toOutbound(), out);
+    });
+
+    test('also on Shadowsocks; never on UDP protocols', () {
+      final ss = OutboundCodec.fromOutbound({
+        'type': 'shadowsocks',
+        'server': 's.example.com',
+        'server_port': 8388,
+        'method': 'aes-128-gcm',
+        'password': 'p',
+        'tcp_fragment': {'packets': '1-2', 'length': '5-15'},
+      });
+      expect(ss.toOutbound()['tcp_fragment'], {
+        'packets': '1-2',
+        'length': '5-15',
+      });
+      final hy2 = OutboundCodec.fromOutbound({
+        'type': 'hysteria2',
+        'server': 'h.example.com',
+        'server_port': 443,
+        'password': 'p',
+        'tcp_fragment': {'packets': 'tlshello', 'length': '10'},
+      });
+      expect(hy2.toOutbound().containsKey('tcp_fragment'), isFalse);
+    });
+
+    test('off by default, with Xray-like defaults ready', () {
+      final s = OutboundCodec.fromOutbound({...base}..remove('tcp_fragment'));
+      expect(s.obfuscation.xrayFragment, isFalse);
+      expect(s.obfuscation.xrayFragmentPackets, 'tlshello');
+      expect(s.obfuscation.xrayFragmentLength, '100-200');
+      expect(s.obfuscation.xrayFragmentInterval, '10-20');
+      expect(s.toOutbound().containsKey('tcp_fragment'), isFalse);
+      expect(s.toOutbound()['tls']['fragment'], isTrue);
+    });
+  });
 }
