@@ -1,0 +1,49 @@
+name: wanx
+description: "WanX — VPN client for iOS and Android built on sing-box."
+publish_to: 'none'
+
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+
+  cupertino_icons: ^1.0.8
+  # State management
+  flutter_riverpod: ^3.4.3
+  # Local persistence of server profiles and settings
+  shared_preferences: ^2.5.5
+  # Stable IDs for server profiles
+  uuid: ^4.6.0
+  # QR import of share links
+  # Swipe actions on server rows
+  flutter_slidable: ^4.0.3
+  # App version in Settings › About
+  package_info_plus: ^9.0.0
+  # Sealed (device-bound, signed) premium subscriptions
+  wanx_sealed:
+    path: packages/wanx_sealed
+  # Privacy Policy and Terms links
+  url_launcher: ^6.3.3
+  flutter_zxing: ^3.1.0
+  camera: ^0.12.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  cryptography: ^2.7.0
+  integration_test:
+    sdk: flutter
+  flutter_driver:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  generate: true

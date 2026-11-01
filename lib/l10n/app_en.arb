@@ -1,0 +1,309 @@
+{
+  "@@locale": "en",
+  "statusConnected": "Connected",
+  "statusConnecting": "Connecting…",
+  "statusDisconnecting": "Disconnecting…",
+  "statusFailed": "Connection failed",
+  "statusDisconnected": "Not connected",
+  "connect": "Connect",
+  "disconnect": "Disconnect",
+  "upload": "Upload",
+  "download": "Download",
+  "perSecond": "{value}/s",
+  "@perSecond": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "checkRunning": "Checking connection…",
+  "checkFailed": "No response — server is not reachable",
+  "checkOk": "Server is alive · {ms} ms",
+  "@checkOk": {
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
+  },
+  "addServer": "Add server",
+  "settings": "Settings",
+  "failedToLoad": "Failed to load servers: {error}",
+  "@failedToLoad": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupManual": "Manual",
+  "updatedAgo": "Updated {ago}",
+  "@updatedAgo": {
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "agoJustNow": "just now",
+  "agoMinutes": "{n} min ago",
+  "@agoMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "agoHours": "{n} h ago",
+  "@agoHours": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "agoDays": "{n} d ago",
+  "@agoDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "noResponseWithin": "{name}: no response within 5 s",
+  "@noResponseWithin": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "serverError": "{name}: {error}",
+  "@serverError": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "serversResponded": "{ok} of {total} servers responded",
+  "@serversResponded": {
+    "placeholders": {
+      "ok": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "deletedServer": "Deleted {name}",
+  "@deletedServer": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "undo": "Undo",
+  "deleteSubscriptionTitle": "Delete “{name}”?",
+  "@deleteSubscriptionTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteSubscriptionBody": "The subscription and all its servers will be removed.",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "noSubscriptionsToRefresh": "No subscriptions to refresh",
+  "subscriptionsUpdated": "Subscriptions updated: {count}, servers: {servers}",
+  "@subscriptionsUpdated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "servers": {
+        "type": "int"
+      }
+    }
+  },
+  "noServersTitle": "No servers yet",
+  "noServersBody": "Add one from a share link, a QR code or a subscription URL.",
+  "swipeTest": "Test",
+  "swipeEdit": "Edit",
+  "serverDetails": "Server details",
+  "latencyFailed": "failed",
+  "testServers": "Test servers",
+  "refreshSubscription": "Refresh subscription",
+  "subscriptionActions": "Subscription actions",
+  "deleteSubscription": "Delete subscription",
+  "importAction": "Import",
+  "subscriptionExists": "This subscription is already added",
+  "groupExists": "A group named “{name}” already exists",
+  "@groupExists": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "importFailed": "Couldn’t import: {reason}",
+  "@importFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "scanQrTitle": "Scan QR code",
+  "cameraDenied": "Camera access is off. Allow it in Settings to scan QR codes.",
+  "cameraUnavailable": "Camera unavailable: {reason}",
+  "@cameraUnavailable": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "startingCamera": "Starting camera…",
+  "pointCamera": "Point the camera at a QR code with a server link",
+  "sectionServer": "Server",
+  "fieldName": "Name",
+  "fieldAddress": "Address",
+  "fieldPort": "Port",
+  "sectionTransport": "Transport",
+  "fieldType": "Type",
+  "fieldServiceName": "Service name",
+  "fieldPath": "Path",
+  "fieldHostHeader": "Host header",
+  "sectionTls": "TLS",
+  "useTls": "Use TLS",
+  "tlsAlwaysOnQuic": "Always on for QUIC protocols",
+  "fieldSni": "SNI",
+  "sniHint": "Defaults to the server address",
+  "fieldAlpn": "ALPN",
+  "alpnHint": "Comma-separated, e.g. h2,http/1.1",
+  "allowInsecure": "Allow insecure",
+  "allowInsecureHint": "Skip certificate verification",
+  "save": "Save",
+  "advanced": "Advanced",
+  "advancedHint": "uTLS fingerprint, fragmentation, Reality",
+  "utlsFingerprint": "uTLS fingerprint",
+  "tlsFragmentation": "TLS fragmentation",
+  "tlsFragmentationHint": "Split the ClientHello across TCP segments",
+  "recordFragmentation": "Record fragmentation",
+  "recordFragmentationHint": "Also split it into multiple TLS records",
+  "fallbackDelay": "Fallback delay, ms",
+  "fallbackDelayHint": "Empty = automatic",
+  "reality": "Reality",
+  "publicKey": "Public key",
+  "shortId": "Short ID",
+  "optional": "Optional",
+  "required": "Required",
+  "portRange": "Port must be 1–65535",
+  "realityNeedsTls": "Reality requires TLS to be enabled",
+  "realityNeedsKey": "Reality needs a public key (Advanced section)",
+  "saved": "Saved",
+  "fromProvider": "From “{group}” · refreshing the subscription resets changes",
+  "@fromProvider": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "addedManually": "Added manually",
+  "sectionAppearance": "Appearance",
+  "language": "Language",
+  "languageSystem": "System",
+  "theme": "Theme",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "sectionConnection": "Connection",
+  "dnsServer": "DNS server",
+  "dnsAdguard": "AdGuard — blocks ads",
+  "ipMode": "IP version",
+  "ipModeHint": "Only if your server supports IPv6, otherwise sites may not open",
+  "ipModeV4": "IPv4 only",
+  "ipModeDual": "IPv4 and IPv6",
+  "ipModeV6": "IPv6 only",
+  "splitTunnel": "Per-app VPN",
+  "splitAll": "All apps",
+  "splitOnly": "Only selected",
+  "splitBypass": "All except selected",
+  "splitHintOff": "Every app uses the VPN.",
+  "splitHintOnly": "Only the selected apps use the VPN; the rest connect directly.",
+  "splitHintBypass": "The selected apps connect directly, bypassing the VPN.",
+  "splitEmptyOnly": "Until you select apps, every app uses the VPN.",
+  "splitValueAll": "All",
+  "splitValueOnly": "Only {count}",
+  "splitValueBypass": "Except {count}",
+  "@splitValueOnly": {"placeholders": {"count": {"type": "int"}}},
+  "@splitValueBypass": {"placeholders": {"count": {"type": "int"}}},
+  "premiumDeviceRemoved": "The provider has restricted access for this device",
+  "premiumRevoked": "The provider has revoked this subscription",
+  "premiumLinkExpired": "This subscription has expired",
+  "premiumUnknown": "This subscription no longer exists",
+  "premiumDeviceLimit": "This link is already added on the maximum number of devices",
+  "premiumPlanInactive": "This provider’s WanX plan is not active",
+  "premiumCheckOverdue": "Couldn’t verify the subscription — refresh it when you’re online",
+  "premiumCheckTimeout": "Couldn’t verify the subscription. Try again later.",
+  "premiumCheckLimit": "No more verification attempts today. Try tomorrow or on another network.",
+  "noticeTitle": "Before you start",
+  "noticeIntro": "WanX is a VPN client: it connects your device to servers from a provider you choose, or your own. Here is what that involves.",
+  "noticeTraffic": "Your traffic goes to the VPN server you choose, never through WanX, and we don’t log it.",
+  "noticeLocal": "No accounts, ads, analytics or tracking. Your servers and settings stay on this device.",
+  "noticeHwid": "When you add a subscription, the app sends its provider a device ID (HWID), the OS and the model so it can limit devices. You can turn this off in Settings.",
+  "noticeLinks": "Encrypted wanx:// links are checked with the WanX service, directly, through Google Cloud or through your VPN connection, using a key made on this device and, if enabled, the same device details.",
+  "noticeAgree": "Agree and continue",
+  "privacyPolicy": "Privacy Policy",
+  "termsOfService": "Terms of Service",
+  "sourceCode": "Source code",
+  "openSourceLicenses": "Open-source licenses",
+  "searchApps": "Search apps",
+  "noApps": "No apps found",
+  "bypassLan": "Bypass local network",
+  "bypassLanHint": "Routers, printers and other local devices stay reachable",
+  "autoConnect": "Connect on launch",
+  "autoConnectHint": "Connect to the selected server when the app opens",
+  "sectionSubscriptions": "Subscriptions",
+  "updateOnLaunch": "Update on launch",
+  "updateOnLaunchHint": "Refresh all subscriptions when the app opens",
+  "sendHwid": "Send device ID (HWID)",
+  "sendHwidHint": "Lets your provider limit the number of devices per subscription",
+  "hwidCopied": "Device ID copied",
+  "newServer": "New server",
+  "serverAdded": "Server added",
+  "fieldProtocol": "Protocol",
+  "sectionAuth": "Authentication",
+  "fieldPassword": "Password",
+  "fieldEncryption": "Encryption",
+  "fieldObfsPassword": "Obfuscation password (Salamander)",
+  "fieldCongestion": "Congestion control",
+  "none": "None",
+  "addFromClipboard": "Import from clipboard",
+  "addScanQr": "Scan QR code",
+  "addEnterLink": "Enter link",
+  "addManually": "Add manually",
+  "clipboardEmpty": "Clipboard is empty",
+  "linkHint": "Server link or subscription URL — detected automatically",
+  "connectionSettingsNote": "Connection settings apply on the next connect.",
+  "sectionAbout": "About",
+  "appVersion": "App version",
+  "aboutText": "A fast, private VPN client. No accounts, no ads, no analytics — your servers and settings stay on this device.",
+  "addedServers": "{count, plural, =1{Added 1 server} other{Added {count} servers}}",
+  "@addedServers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}

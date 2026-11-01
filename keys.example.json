@@ -1,0 +1,3 @@
+{
+  "WANX_LINK_PRIVATE_KEY": "<base64 private key from server/bin/linkkey.dart>"
+}
