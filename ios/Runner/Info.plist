@@ -4,6 +4,8 @@
 <dict>
 	<key>NSCameraUsageDescription</key>
 	<string>WanX uses the camera to scan QR codes with server links.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>WanX can read a QR code with server links from a photo you choose.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
