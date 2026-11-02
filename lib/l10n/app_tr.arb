@@ -141,7 +141,7 @@
   "premiumRevoked": "Sağlayıcı bu aboneliği iptal etti",
   "premiumUnknown": "Bu abonelik artık mevcut değil",
   "premiumDeviceLimit": "Bu bağlantı zaten en fazla cihaza eklendi",
-  "premiumPlanInactive": "Bu sağlayıcının WanX planı etkin değil",
+  "premiumPlanInactive": "Bu sağlayıcının bağlantıları artık etkin değil",
   "premiumCheckOverdue": "Abonelik doğrulanamadı — çevrimiçi olduğunuzda yenileyin",
   "premiumCheckTimeout": "Abonelik doğrulanamadı. Daha sonra tekrar deneyin.",
   "premiumCheckLimit": "Bugün için doğrulama denemeleri bitti. Yarın ya da başka bir ağda deneyin.",

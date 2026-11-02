@@ -272,7 +272,7 @@
   "premiumRevoked": "The provider has revoked this subscription",
   "premiumUnknown": "This subscription no longer exists",
   "premiumDeviceLimit": "This link is already added on the maximum number of devices",
-  "premiumPlanInactive": "This provider’s WanX plan is not active",
+  "premiumPlanInactive": "This provider’s links are no longer active",
   "premiumCheckOverdue": "Couldn’t verify the subscription — refresh it when you’re online",
   "premiumCheckTimeout": "Couldn’t verify the subscription. Try again later.",
   "premiumCheckLimit": "No more verification attempts today. Try tomorrow or on another network.",

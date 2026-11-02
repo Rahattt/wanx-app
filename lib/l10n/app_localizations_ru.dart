@@ -488,7 +488,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Ссылка уже добавлена на максимальное число устройств';
 
   @override
-  String get premiumPlanInactive => 'План провайдера в WanX не активен';
+  String get premiumPlanInactive => 'Ссылки этого провайдера больше не активны';
 
   @override
   String get premiumCheckOverdue =>

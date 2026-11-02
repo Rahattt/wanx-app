@@ -953,7 +953,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumPlanInactive.
   ///
   /// In en, this message translates to:
-  /// **'This provider’s WanX plan is not active'**
+  /// **'This provider’s links are no longer active'**
   String get premiumPlanInactive;
 
   /// No description provided for @premiumCheckOverdue.

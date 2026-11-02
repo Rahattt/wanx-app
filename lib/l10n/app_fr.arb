@@ -141,7 +141,7 @@
   "premiumRevoked": "Le fournisseur a révoqué cet abonnement",
   "premiumUnknown": "Cet abonnement n’existe plus",
   "premiumDeviceLimit": "Ce lien est déjà ajouté sur le nombre maximal d’appareils",
-  "premiumPlanInactive": "Le forfait WanX de ce fournisseur n’est pas actif",
+  "premiumPlanInactive": "Les liens de ce fournisseur ne sont plus actifs",
   "premiumCheckOverdue": "Impossible de vérifier l’abonnement — actualisez-le une fois en ligne",
   "premiumCheckTimeout": "Impossible de vérifier l’abonnement. Réessayez plus tard.",
   "premiumCheckLimit": "Plus de tentatives de vérification aujourd’hui. Réessayez demain ou sur un autre réseau.",

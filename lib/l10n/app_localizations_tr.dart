@@ -484,7 +484,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get premiumDeviceLimit => 'Bu bağlantı zaten en fazla cihaza eklendi';
 
   @override
-  String get premiumPlanInactive => 'Bu sağlayıcının WanX planı etkin değil';
+  String get premiumPlanInactive =>
+      'Bu sağlayıcının bağlantıları artık etkin değil';
 
   @override
   String get premiumCheckOverdue =>

@@ -475,7 +475,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumDeviceLimit => '此链接已添加到最大数量的设备';
 
   @override
-  String get premiumPlanInactive => '该提供商的 WanX 套餐未激活';
+  String get premiumPlanInactive => '该提供商的链接已不再有效';
 
   @override
   String get premiumCheckOverdue => '无法验证订阅——联网后请刷新';

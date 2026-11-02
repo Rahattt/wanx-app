@@ -489,7 +489,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get premiumPlanInactive =>
-      'Le forfait WanX de ce fournisseur n’est pas actif';
+      'Les liens de ce fournisseur ne sont plus actifs';
 
   @override
   String get premiumCheckOverdue =>
