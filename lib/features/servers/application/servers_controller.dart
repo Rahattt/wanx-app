@@ -346,6 +346,83 @@ class ServersController extends AsyncNotifier<ServersState> {
     return RefreshResult(updated, failures);
   }
 
+  /// Renames a plain subscription and, when [url] changed, downloads the
+  /// new list in place of the old one. Throws [ImportException] and keeps
+  /// everything as it was when the name is taken or the download fails.
+  /// Premium links can't be edited: their URL is never shown.
+  Future<void> editSubscription(
+    String subscriptionId, {
+    required String name,
+    required String url,
+  }) async {
+    final sub = _current.subscriptions
+        .where((s) => s.id == subscriptionId)
+        .firstOrNull;
+    if (sub == null || sub.sealed) return;
+    final newName = name.trim();
+    if (newName.isEmpty) throw ImportException('Name is empty');
+    if (newName != sub.name && _hasGroup(newName)) {
+      throw ImportException(
+        'A group named "$newName" already exists',
+        kind: ImportFailure.duplicateGroup,
+        name: newName,
+      );
+    }
+    if (isEncryptedLink(url.trim())) {
+      throw ImportException('A wanx:// link is added as a new subscription');
+    }
+    final storedUrl = _validUrl(url.trim()).originalUrl.toString();
+    final urlChanged = storedUrl != sub.url;
+    if (urlChanged &&
+        _current.subscriptions.any(
+          (s) => s.id != sub.id && s.url == storedUrl,
+        )) {
+      throw ImportException(
+        'This subscription is already added',
+        kind: ImportFailure.duplicateSubscription,
+      );
+    }
+    var edited = sub.copyWith(name: newName, url: storedUrl);
+    List<Server>? fresh;
+    if (urlChanged) {
+      final (fetched, servers, _) = await _fetch(edited);
+      edited = fetched.copyWith(updatedAt: DateTime.now());
+      fresh = servers;
+    }
+    final current = _current;
+    final old = [
+      for (final s in current.servers)
+        if (s.subscriptionId == sub.id) s,
+    ];
+    final List<Server> replaced;
+    if (fresh == null) {
+      replaced = [for (final s in old) s.copyWith(group: newName)];
+    } else {
+      // Servers that are still there keep their id, so the selection holds.
+      final byKey = {for (final s in old) s.matchKey: s};
+      replaced = [
+        for (final s in fresh)
+          s.copyWith(id: byKey.remove(s.matchKey)?.id, group: newName),
+      ];
+    }
+    final servers = [
+      for (final s in current.servers)
+        if (s.subscriptionId != sub.id) s,
+      ...replaced,
+    ];
+    await _commit(
+      ServersState(
+        servers: servers,
+        subscriptions: [
+          for (final s in current.subscriptions) s.id == sub.id ? edited : s,
+        ],
+        selectedId: servers.any((s) => s.id == current.selectedId)
+            ? current.selectedId
+            : replaced.firstOrNull?.id ?? servers.firstOrNull?.id,
+      ),
+    );
+  }
+
   Future<void> removeSubscription(String subscriptionId) async {
     final servers = _current.servers
         .where((s) => s.subscriptionId != subscriptionId)

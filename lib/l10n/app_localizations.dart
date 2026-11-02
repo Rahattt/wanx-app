@@ -362,6 +362,24 @@ abstract class AppLocalizations {
   /// **'Delete subscription'**
   String get deleteSubscription;
 
+  /// No description provided for @editSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit subscription'**
+  String get editSubscription;
+
+  /// No description provided for @subscriptionName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get subscriptionName;
+
+  /// No description provided for @subscriptionUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription URL'**
+  String get subscriptionUrl;
+
   /// No description provided for @importAction.
   ///
   /// In en, this message translates to:

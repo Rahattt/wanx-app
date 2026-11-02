@@ -52,6 +52,7 @@ class Subscription {
 
   Subscription copyWith({
     String? name,
+    String? url,
     DateTime? updatedAt,
     bool? sealed,
     String? envelope,
@@ -62,7 +63,7 @@ class Subscription {
   }) => Subscription(
     id: id,
     name: name ?? this.name,
-    url: url,
+    url: url ?? this.url,
     updatedAt: updatedAt ?? this.updatedAt,
     sealed: sealed ?? this.sealed,
     envelope: envelope ?? this.envelope,

@@ -165,6 +165,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get deleteSubscription => '删除订阅';
 
   @override
+  String get editSubscription => '编辑订阅';
+
+  @override
+  String get subscriptionName => '名称';
+
+  @override
+  String get subscriptionUrl => '订阅链接';
+
+  @override
   String get importAction => '导入';
 
   @override

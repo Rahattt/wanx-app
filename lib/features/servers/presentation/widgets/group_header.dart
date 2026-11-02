@@ -16,6 +16,7 @@ class GroupHeader extends StatelessWidget {
     required this.count,
     this.subtitle,
     this.onDelete,
+    this.onEdit,
     this.onTest,
     this.testing = false,
     this.onRefresh,
@@ -28,6 +29,10 @@ class GroupHeader extends StatelessWidget {
 
   /// Shown as a menu action for subscription groups.
   final VoidCallback? onDelete;
+
+  /// Menu action to rename the group or change its URL; null where the
+  /// subscription can't be edited (premium links).
+  final VoidCallback? onEdit;
 
   /// Tests every server in the group.
   final VoidCallback? onTest;
@@ -95,6 +100,11 @@ class GroupHeader extends StatelessWidget {
               tooltip: context.l10n.subscriptionActions,
               icon: Icon(Icons.more_horiz_rounded, color: muted, size: 22),
               itemBuilder: (_) => [
+                if (onEdit != null)
+                  PopupMenuItem(
+                    onTap: onEdit,
+                    child: Text(context.l10n.editSubscription),
+                  ),
                 PopupMenuItem(
                   onTap: onDelete,
                   child: Text(

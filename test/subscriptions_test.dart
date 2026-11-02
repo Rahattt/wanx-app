@@ -112,6 +112,75 @@ void main() {
     expect(state.servers.where((s) => !s.isFromSubscription).single.name, 'm');
   });
 
+  test('editing renames a plain list and swaps its URL', () async {
+    final fake = _FakeFetcher()
+      ..body = 'trojan://p@a.example.com:443#a\ntrojan://p@b.example.com:443#b';
+    final container = ProviderContainer(
+      overrides: [
+        serverRepositoryProvider.overrideWithValue(_MemoryRepository()),
+        subscriptionFetcherProvider.overrideWithValue(fake),
+      ],
+    );
+    addTearDown(container.dispose);
+    final controller = container.read(serversProvider.notifier);
+    await container.read(serversProvider.future);
+    await controller.importAuto('https://sub.example.com/a');
+    await controller.importAuto('https://other.example.com/x');
+    ServersState state() => container.read(serversProvider).value!;
+    final sub = state().subscriptions.first;
+    final keptId = state().servers.firstWhere((s) => s.name == 'b').id;
+    await controller.select(keptId);
+
+    // Rename only: no download, servers follow the new group name.
+    fake.error = SubscriptionException('must not download');
+    await controller.editSubscription(
+      sub.id,
+      name: 'Home',
+      url: 'https://sub.example.com/a',
+    );
+    expect(state().subscriptions.first.name, 'Home');
+    expect(
+      state().servers
+          .where((s) => s.subscriptionId == sub.id)
+          .map((s) => s.group),
+      ['Home', 'Home'],
+    );
+
+    // A taken name or a failed download changes nothing.
+    await expectLater(
+      controller.editSubscription(
+        sub.id,
+        name: 'other.example.com',
+        url: 'https://sub.example.com/a',
+      ),
+      throwsA(isA<ImportException>()),
+    );
+    await expectLater(
+      controller.editSubscription(
+        sub.id,
+        name: 'Home',
+        url: 'https://sub.example.com/new',
+      ),
+      throwsA(isA<ImportException>()),
+    );
+    expect(state().subscriptions.first.url, 'https://sub.example.com/a');
+
+    // New URL: its list replaces the old one; a server still there keeps
+    // its id and the selection.
+    fake
+      ..error = null
+      ..body = 'trojan://p@b.example.com:443#b\ntrojan://p@c.example.com:443#c';
+    await controller.editSubscription(
+      sub.id,
+      name: 'Home',
+      url: 'https://sub.example.com/new',
+    );
+    final servers = state().servers.where((s) => s.subscriptionId == sub.id);
+    expect(servers.map((s) => s.name), ['b', 'c']);
+    expect(state().subscriptions.first.url, 'https://sub.example.com/new');
+    expect(state().selectedId, keptId);
+  });
+
   test('a plain list ignores the link label', () async {
     final fake = _FakeFetcher()..body = 'trojan://p@a.example.com:443#a';
     final container = ProviderContainer(

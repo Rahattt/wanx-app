@@ -167,6 +167,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteSubscription => 'Delete subscription';
 
   @override
+  String get editSubscription => 'Edit subscription';
+
+  @override
+  String get subscriptionName => 'Name';
+
+  @override
+  String get subscriptionUrl => 'Subscription URL';
+
+  @override
   String get importAction => 'Import';
 
   @override

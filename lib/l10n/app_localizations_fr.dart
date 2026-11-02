@@ -167,6 +167,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get deleteSubscription => 'Supprimer l’abonnement';
 
   @override
+  String get editSubscription => 'Modifier l’abonnement';
+
+  @override
+  String get subscriptionName => 'Nom';
+
+  @override
+  String get subscriptionUrl => 'URL de l’abonnement';
+
+  @override
   String get importAction => 'Importer';
 
   @override

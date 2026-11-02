@@ -167,6 +167,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get deleteSubscription => 'Удалить подписку';
 
   @override
+  String get editSubscription => 'Изменить подписку';
+
+  @override
+  String get subscriptionName => 'Название';
+
+  @override
+  String get subscriptionUrl => 'Ссылка подписки';
+
+  @override
   String get importAction => 'Импорт';
 
   @override

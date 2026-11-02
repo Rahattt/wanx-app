@@ -23,6 +23,7 @@ import '../../../theme/app_theme.dart';
 import '../../../theme/components.dart';
 import '../../../theme/motion.dart';
 import 'widgets/connection_card.dart';
+import 'widgets/edit_subscription_dialog.dart';
 import 'widgets/group_header.dart';
 import 'widgets/server_tile.dart';
 
@@ -316,6 +317,9 @@ class _ServersScreenState extends ConsumerState<ServersScreen> {
                     : context.l10n.updatedAgo(_ago(sub!.updatedAt!)),
                 count: group.servers.length,
                 onDelete: sub == null ? null : () => _deleteSubscription(sub),
+                onEdit: sub == null || sub.sealed
+                    ? null
+                    : () => _editSubscription(sub),
                 testing: group.servers.any((s) => _testing.contains(s.id)),
                 onTest: group.servers.isEmpty
                     ? null
@@ -438,6 +442,41 @@ class _ServersScreenState extends ConsumerState<ServersScreen> {
           ),
         ),
       );
+  }
+
+  Future<void> _editSubscription(Subscription sub) async {
+    final result = await showDialog<(String, String)>(
+      context: context,
+      builder: (_) => EditSubscriptionDialog(name: sub.name, url: sub.url),
+    );
+    if (result == null || !mounted) return;
+    final (name, url) = result;
+    final l10n = context.l10n;
+    final navigator = Navigator.of(context);
+    // A new URL downloads the list: block the screen meanwhile.
+    final downloading = url.trim() != sub.url;
+    if (downloading) {
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const PopScope(
+          canPop: false,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+    try {
+      await _servers.editSubscription(sub.id, name: name, url: url);
+    } on ImportException catch (e) {
+      if (downloading) navigator.pop();
+      _snack(switch (e.kind) {
+        ImportFailure.duplicateSubscription => l10n.subscriptionExists,
+        ImportFailure.duplicateGroup => l10n.groupExists(e.name ?? ''),
+        ImportFailure.other => l10n.importFailed(e.message),
+      });
+      return;
+    }
+    if (downloading) navigator.pop();
   }
 
   Future<void> _deleteSubscription(Subscription sub) async {

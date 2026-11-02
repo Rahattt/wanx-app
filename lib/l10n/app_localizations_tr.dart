@@ -166,6 +166,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String get deleteSubscription => 'Aboneliği sil';
 
   @override
+  String get editSubscription => 'Aboneliği düzenle';
+
+  @override
+  String get subscriptionName => 'Ad';
+
+  @override
+  String get subscriptionUrl => 'Abonelik bağlantısı';
+
+  @override
   String get importAction => 'İçe aktar';
 
   @override
