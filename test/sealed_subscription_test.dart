@@ -19,6 +19,8 @@ import 'package:wanx_sealed/wanx_sealed.dart' as sealed;
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   SharedPreferences.setMockInitialValues({});
+  // The release link key is not in the source.
+  LinkKey.testKeys = sealed.generateDeviceKey();
 
   final seed = List.generate(32, (i) => i * 3 % 256);
   late _SoftKeys keys;

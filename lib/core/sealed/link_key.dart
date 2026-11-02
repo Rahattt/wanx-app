@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart';
 
 /// Opens encrypted `wanx://crypt1/…` links (see `encryptLink` in
 /// packages/wanx_sealed). The server holds only the public half
@@ -12,12 +13,21 @@ import 'dart:typed_data';
 abstract final class LinkKey {
   static const _privateKey = String.fromEnvironment('WANX_LINK_PRIVATE_KEY');
 
-  static bool get available => _privateKey.isNotEmpty;
+  static bool get available => _test != null || _privateKey.isNotEmpty;
 
-  static final privateKey = Uint8List.fromList(base64.decode(_privateKey));
-  static final publicKey = Uint8List.fromList(
+  static Uint8List get privateKey => _test?.$1 ?? _built;
+  static Uint8List get publicKey => _test?.$2 ?? _public;
+
+  static final _built = Uint8List.fromList(base64.decode(_privateKey));
+  static final _public = Uint8List.fromList(
     base64.decode(
       'BMUEFqMtRGvZfn+P5gy+oEfZG5QahNn4S+C8H9ReNvXVvJEzCiTmcwY80OiJo2P7NNtMIRo9jS/YFKJ5Ljzgnc8=',
     ),
   );
+
+  static (Uint8List, Uint8List)? _test;
+
+  /// A throwaway key pair, so tests run without the release key.
+  @visibleForTesting
+  static set testKeys((Uint8List, Uint8List)? keys) => _test = keys;
 }
