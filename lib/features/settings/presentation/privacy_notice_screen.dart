@@ -8,9 +8,8 @@ import '../application/settings_controller.dart';
 
 const privacyPolicyUrl = 'https://wanx.dev/privacy/';
 const termsUrl = 'https://wanx.dev/terms/';
-
-/// Public source of this app (GPLv3, required by the sing-box core).
-const sourceCodeUrl = 'https://github.com/Rahattt/wanx-app';
+const websiteUrl = 'https://wanx.dev/';
+const supportEmail = 'support@wanx.dev';
 
 Future<void> openLegal(String url) =>
     launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);

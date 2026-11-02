@@ -1028,12 +1028,6 @@ abstract class AppLocalizations {
   /// **'Terms of Service'**
   String get termsOfService;
 
-  /// No description provided for @sourceCode.
-  ///
-  /// In en, this message translates to:
-  /// **'Source code'**
-  String get sourceCode;
-
   /// No description provided for @openSourceLicenses.
   ///
   /// In en, this message translates to:
@@ -1213,6 +1207,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'About'**
   String get sectionAbout;
+
+  /// No description provided for @aboutApp.
+  ///
+  /// In en, this message translates to:
+  /// **'About WanX'**
+  String get aboutApp;
+
+  /// No description provided for @versionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String versionLabel(String version);
+
+  /// No description provided for @sectionSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Support'**
+  String get sectionSupport;
+
+  /// No description provided for @contactSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact support'**
+  String get contactSupport;
+
+  /// No description provided for @website.
+  ///
+  /// In en, this message translates to:
+  /// **'Website'**
+  String get website;
+
+  /// No description provided for @sectionLegal.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal'**
+  String get sectionLegal;
+
+  /// No description provided for @licenseNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'WanX is free software licensed under the GNU GPL v3. Its source code is available on request at {email}.'**
+  String licenseNotice(String email);
 
   /// No description provided for @appVersion.
   ///

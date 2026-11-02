@@ -29,7 +29,6 @@ class SettingsScreen extends ConsumerWidget {
     final l10n = context.l10n;
     final settings = ref.watch(settingsProvider).value ?? const AppSettings();
     final controller = ref.read(settingsProvider.notifier);
-    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settings)),
@@ -153,10 +152,95 @@ class SettingsScreen extends ConsumerWidget {
           _Section(
             title: l10n.sectionAbout,
             children: [
-              _InfoRow(
-                title: l10n.appVersion,
-                value: ref.watch(_appVersionProvider).value ?? '—',
+              _NavRow(
+                title: l10n.aboutApp,
+                value: ref.watch(_appVersionProvider).value ?? '',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const AboutScreen()),
+                ),
               ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// About WanX: version, contact, legal pages and open-source licenses.
+class AboutScreen extends ConsumerWidget {
+  const AboutScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final version = ref.watch(_appVersionProvider).value ?? '';
+    final muted = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.sectionAbout)),
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.page,
+          AppSpacing.lg,
+          AppSpacing.page,
+          AppSpacing.xl + MediaQuery.paddingOf(context).bottom,
+        ),
+        children: [
+          Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(22),
+              child: Image.asset(
+                'assets/branding/app_icon.png',
+                width: 96,
+                height: 96,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            'WanX',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l10n.versionLabel(version),
+            textAlign: TextAlign.center,
+            style: muted,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            l10n.aboutText,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          _Section(
+            title: l10n.sectionSupport,
+            children: [
+              _NavRow(
+                title: l10n.contactSupport,
+                value: supportEmail,
+                onTap: () => openLegal('mailto:$supportEmail'),
+              ),
+              _NavRow(
+                title: l10n.website,
+                value: 'wanx.dev',
+                onTap: () => openLegal(websiteUrl),
+              ),
+            ],
+          ),
+          _Section(
+            title: l10n.sectionLegal,
+            footer: l10n.licenseNotice(supportEmail),
+            children: [
               _NavRow(
                 title: l10n.privacyPolicy,
                 value: '',
@@ -168,34 +252,22 @@ class SettingsScreen extends ConsumerWidget {
                 onTap: () => openLegal(termsUrl),
               ),
               _NavRow(
-                title: l10n.sourceCode,
-                value: 'GPLv3',
-                onTap: () => openLegal(sourceCodeUrl),
-              ),
-              _NavRow(
                 title: l10n.openSourceLicenses,
                 value: '',
                 onTap: () => showLicensePage(
                   context: context,
                   applicationName: 'WanX',
-                  applicationVersion: ref.read(_appVersionProvider).value,
+                  applicationVersion: version,
+                  applicationLegalese: '© 2026 RayCentral LLC',
                 ),
               ),
             ],
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.md,
-              AppSpacing.lg,
-              0,
-            ),
-            child: Text(
-              l10n.aboutText,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
+          const SizedBox(height: AppSpacing.xl),
+          Text(
+            '© 2026 RayCentral LLC',
+            textAlign: TextAlign.center,
+            style: muted,
           ),
         ],
       ),
@@ -507,36 +579,6 @@ class _HwidRow extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.title, required this.value});
-
-  final String title;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: 14,
-      ),
-      child: Row(
-        children: [
-          Expanded(child: Text(title, style: theme.textTheme.bodyLarge)),
-          Text(
-            value,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
-        ],
       ),
     );
   }

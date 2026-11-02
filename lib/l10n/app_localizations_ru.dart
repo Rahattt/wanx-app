@@ -535,9 +535,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get termsOfService => 'Условия использования';
 
   @override
-  String get sourceCode => 'Исходный код';
-
-  @override
   String get openSourceLicenses => 'Лицензии открытого ПО';
 
   @override
@@ -632,6 +629,31 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get sectionAbout => 'О приложении';
+
+  @override
+  String get aboutApp => 'О WanX';
+
+  @override
+  String versionLabel(String version) {
+    return 'Версия $version';
+  }
+
+  @override
+  String get sectionSupport => 'Поддержка';
+
+  @override
+  String get contactSupport => 'Написать в поддержку';
+
+  @override
+  String get website => 'Сайт';
+
+  @override
+  String get sectionLegal => 'Правовая информация';
+
+  @override
+  String licenseNotice(String email) {
+    return 'WanX — свободное ПО под лицензией GNU GPL v3. Исходный код предоставляется по запросу на $email.';
+  }
 
   @override
   String get appVersion => 'Версия приложения';

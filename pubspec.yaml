@@ -2,7 +2,7 @@ name: wanx
 description: "WanX — VPN client for iOS and Android built on sing-box."
 publish_to: 'none'
 
-version: 1.0.0+4
+version: 1.0.0+5
 
 environment:
   sdk: ^3.13.2
@@ -49,3 +49,4 @@ flutter:
   generate: true
   assets:
     - assets/licenses/
+    - assets/branding/

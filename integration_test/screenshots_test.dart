@@ -125,6 +125,12 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.settings_rounded));
     await shot(tester, '13_settings');
+    await tester.ensureVisible(find.text('About WanX'));
+    await _settle(tester);
+    await tester.tap(find.text('About WanX'));
+    await shot(tester, '14_about');
+    Navigator.of(tester.element(find.byType(AboutScreen))).pop();
+    await _settle(tester);
     Navigator.of(tester.element(find.byType(SettingsScreen))).pop();
     await _settle(tester);
     // The traffic stream resumes with its next sample.

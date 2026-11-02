@@ -517,9 +517,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get termsOfService => '服务条款';
 
   @override
-  String get sourceCode => '源代码';
-
-  @override
   String get openSourceLicenses => '开源许可';
 
   @override
@@ -608,6 +605,31 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sectionAbout => '关于';
+
+  @override
+  String get aboutApp => '关于 WanX';
+
+  @override
+  String versionLabel(String version) {
+    return '版本 $version';
+  }
+
+  @override
+  String get sectionSupport => '支持';
+
+  @override
+  String get contactSupport => '联系支持';
+
+  @override
+  String get website => '网站';
+
+  @override
+  String get sectionLegal => '法律信息';
+
+  @override
+  String licenseNotice(String email) {
+    return 'WanX 是基于 GNU GPL v3 许可的自由软件。如需源代码，请发送邮件至 $email。';
+  }
 
   @override
   String get appVersion => '应用版本';

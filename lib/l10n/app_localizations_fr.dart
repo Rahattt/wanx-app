@@ -536,9 +536,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get termsOfService => 'Conditions d’utilisation';
 
   @override
-  String get sourceCode => 'Code source';
-
-  @override
   String get openSourceLicenses => 'Licences open source';
 
   @override
@@ -632,6 +629,31 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get sectionAbout => 'À propos';
+
+  @override
+  String get aboutApp => 'À propos de WanX';
+
+  @override
+  String versionLabel(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get sectionSupport => 'Assistance';
+
+  @override
+  String get contactSupport => 'Contacter l’assistance';
+
+  @override
+  String get website => 'Site web';
+
+  @override
+  String get sectionLegal => 'Mentions légales';
+
+  @override
+  String licenseNotice(String email) {
+    return 'WanX est un logiciel libre sous licence GNU GPL v3. Son code source est disponible sur demande à $email.';
+  }
 
   @override
   String get appVersion => 'Version de l’app';

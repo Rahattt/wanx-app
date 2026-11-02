@@ -532,9 +532,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get termsOfService => 'Kullanım Koşulları';
 
   @override
-  String get sourceCode => 'Kaynak kodu';
-
-  @override
   String get openSourceLicenses => 'Açık kaynak lisansları';
 
   @override
@@ -628,6 +625,31 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get sectionAbout => 'Hakkında';
+
+  @override
+  String get aboutApp => 'WanX hakkında';
+
+  @override
+  String versionLabel(String version) {
+    return 'Sürüm $version';
+  }
+
+  @override
+  String get sectionSupport => 'Destek';
+
+  @override
+  String get contactSupport => 'Destekle iletişime geç';
+
+  @override
+  String get website => 'Web sitesi';
+
+  @override
+  String get sectionLegal => 'Yasal';
+
+  @override
+  String licenseNotice(String email) {
+    return 'WanX, GNU GPL v3 lisanslı özgür bir yazılımdır. Kaynak kodu $email adresinden istek üzerine sağlanır.';
+  }
 
   @override
   String get appVersion => 'Uygulama sürümü';
