@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +8,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../vpn/application/vpn_controller.dart';
 import '../application/servers_controller.dart';
+import '../data/share_link_parser.dart';
 import '../domain/server.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_theme.dart';
@@ -47,6 +49,11 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
   late final _path = TextEditingController(text: _original.transport.path);
   late final _hostHeader = TextEditingController(
     text: _original.transport.host,
+  );
+  late final _xhttpExtra = TextEditingController(
+    text: _original.transport.type == TransportType.xhttp
+        ? _prettyJson({..._original.transport.extra}..remove('mode'))
+        : '',
   );
   late final _sni = TextEditingController(text: _original.tls.sni);
   late final _alpn = TextEditingController(text: _original.tls.alpn.join(','));
@@ -184,6 +191,7 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
       _port,
       _path,
       _hostHeader,
+      _xhttpExtra,
       _sni,
       _alpn,
       _fallbackDelay,
@@ -306,6 +314,15 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
                           items: {for (final m in _xhttpModes) m: m},
                           onChanged: (m) => setState(() => _xhttpMode = m),
                         ),
+                      if (_transportType == TransportType.xhttp)
+                        _field(
+                          _xhttpExtra,
+                          l10n.fieldXhttpExtra,
+                          hint: l10n.xhttpExtraHint,
+                          keyboard: TextInputType.multiline,
+                          maxLines: null,
+                          validator: _validateXhttpExtra,
+                        ),
                     ],
                   ),
                 if (protocol.supportsTls)
@@ -369,9 +386,37 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
       host: _hostHeader.text.trim(),
     );
     if (_transportType != TransportType.xhttp) return t;
-    final extra = Map<String, dynamic>.of(t.extra)..remove('mode');
-    if (_xhttpMode != 'auto') extra['mode'] = _xhttpMode;
-    return t.copyWith(extra: extra);
+    return t.copyWith(
+      extra: {
+        ..._parseXhttpExtra(),
+        if (_xhttpMode != 'auto') 'mode': _xhttpMode,
+      },
+    );
+  }
+
+  static String _prettyJson(Map<String, dynamic> json) =>
+      json.isEmpty ? '' : const JsonEncoder.withIndent('  ').convert(json);
+
+  /// Throws [FormatException] or [ShareLinkException] on bad input.
+  Map<String, dynamic> _parseXhttpExtra() {
+    final text = _xhttpExtra.text.trim();
+    if (text.isEmpty) return const {};
+    final json = jsonDecode(text);
+    if (json is! Map<String, dynamic>) {
+      throw const FormatException('not a JSON object');
+    }
+    return ShareLinkParser.xhttpExtraFromJson(json);
+  }
+
+  String? _validateXhttpExtra(String? _) {
+    try {
+      _parseXhttpExtra();
+      return null;
+    } on FormatException catch (e) {
+      return l10n.xhttpExtraInvalid(e.message);
+    } on ShareLinkException catch (e) {
+      return l10n.xhttpExtraInvalid(e.message);
+    }
   }
 
   List<Widget> _authFields(ServerProtocol protocol) {
@@ -784,12 +829,14 @@ class _ServerDetailsScreenState extends ConsumerState<ServerDetailsScreen> {
     String? Function(String?)? validator,
     TextInputType? keyboard,
     bool digitsOnly = false,
+    int? maxLines = 1,
   }) {
     final theme = Theme.of(context);
     return TextFormField(
       controller: controller,
       enabled: enabled,
       keyboardType: keyboard,
+      maxLines: maxLines,
       autocorrect: false,
       style: theme.textTheme.bodyLarge?.copyWith(
         color: enabled

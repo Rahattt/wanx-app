@@ -190,6 +190,28 @@ void main() {
       final ws = s.transport.copyWith(type: TransportType.ws);
       expect(ws.extra, isEmpty);
     });
+
+    test('hand-typed extra takes Xray and sing-box keys', () {
+      expect(
+        ShareLinkParser.xhttpExtraFromJson({
+          'xPaddingBytes': [100, 1000],
+          'no_grpc_header': true,
+          'xmux': {'maxConcurrency': '16-32', 'max_connections': 4},
+        }),
+        {
+          'x_padding_bytes': '100-1000',
+          'no_grpc_header': true,
+          'xmux': {'max_concurrency': '16-32', 'max_connections': 4},
+        },
+      );
+    });
+
+    test('hand-typed extra rejects unknown keys', () {
+      expect(
+        () => ShareLinkParser.xhttpExtraFromJson({'downloadSettings': {}}),
+        throwsA(isA<ShareLinkException>()),
+      );
+    });
   });
 
   group('Remnawave / Happ subscriptions', () {

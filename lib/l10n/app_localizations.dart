@@ -494,6 +494,24 @@ abstract class AppLocalizations {
   /// **'Mode'**
   String get fieldXhttpMode;
 
+  /// No description provided for @fieldXhttpExtra.
+  ///
+  /// In en, this message translates to:
+  /// **'Extra (JSON)'**
+  String get fieldXhttpExtra;
+
+  /// No description provided for @xhttpExtraHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced XHTTP options, Xray or sing-box keys'**
+  String get xhttpExtraHint;
+
+  /// No description provided for @xhttpExtraInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid XHTTP options: {details}'**
+  String xhttpExtraInvalid(String details);
+
   /// No description provided for @fieldPrivateKey.
   ///
   /// In en, this message translates to:

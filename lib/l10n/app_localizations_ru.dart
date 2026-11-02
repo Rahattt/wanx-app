@@ -240,6 +240,17 @@ class AppLocalizationsRu extends AppLocalizations {
   String get fieldXhttpMode => 'Режим';
 
   @override
+  String get fieldXhttpExtra => 'Extra (JSON)';
+
+  @override
+  String get xhttpExtraHint => 'Доп. параметры XHTTP, ключи Xray или sing-box';
+
+  @override
+  String xhttpExtraInvalid(String details) {
+    return 'Неверные параметры XHTTP: $details';
+  }
+
+  @override
   String get fieldPrivateKey => 'Приватный ключ';
 
   @override

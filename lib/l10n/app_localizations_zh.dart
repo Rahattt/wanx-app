@@ -237,6 +237,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fieldXhttpMode => '模式';
 
   @override
+  String get fieldXhttpExtra => 'Extra (JSON)';
+
+  @override
+  String get xhttpExtraHint => 'XHTTP 高级选项，Xray 或 sing-box 键名';
+
+  @override
+  String xhttpExtraInvalid(String details) {
+    return 'XHTTP 选项无效：$details';
+  }
+
+  @override
   String get fieldPrivateKey => '私钥';
 
   @override

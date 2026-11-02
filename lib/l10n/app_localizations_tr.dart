@@ -239,6 +239,18 @@ class AppLocalizationsTr extends AppLocalizations {
   String get fieldXhttpMode => 'Mod';
 
   @override
+  String get fieldXhttpExtra => 'Extra (JSON)';
+
+  @override
+  String get xhttpExtraHint =>
+      'Gelişmiş XHTTP seçenekleri, Xray veya sing-box anahtarları';
+
+  @override
+  String xhttpExtraInvalid(String details) {
+    return 'Geçersiz XHTTP seçenekleri: $details';
+  }
+
+  @override
   String get fieldPrivateKey => 'Özel anahtar';
 
   @override

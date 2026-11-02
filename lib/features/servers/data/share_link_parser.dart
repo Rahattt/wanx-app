@@ -456,6 +456,32 @@ class ShareLinkParser {
     _ => value,
   };
 
+  /// XHTTP options typed by hand: sing-box-lx keys as they are, Xray keys
+  /// converted as in links. Unlike links, an unknown key is an error.
+  static Map<String, dynamic> xhttpExtraFromJson(Map<String, dynamic> json) {
+    String key(String k, Map<String, String> xray) {
+      if (xray.containsValue(k)) return k;
+      if (xray[k] case final mapped?) return mapped;
+      throw ShareLinkException('unknown option "$k"');
+    }
+
+    return {
+      for (final MapEntry(key: k, :value) in json.entries)
+        if (k == 'xmux')
+          'xmux': value is Map
+              ? {
+                  for (final MapEntry(key: x, value: v)
+                      in value.cast<String, dynamic>().entries)
+                    key(x, _xmuxKeys): v,
+                }
+              : throw ShareLinkException('"xmux" must be an object')
+        else if (key(k, _xhttpKeys) case final mapped)
+          mapped: _xhttpStringRanges.contains(mapped)
+              ? _rangeString(value)
+              : value,
+    };
+  }
+
   Map<String, dynamic> _xhttpExtra(Map<String, dynamic> extra) {
     bool isSet(Object? v) => v != null && v != '' && v != 0 && v != false;
     final xmux = extra['xmux'] is Map

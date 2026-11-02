@@ -240,6 +240,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldXhttpMode => 'Mode';
 
   @override
+  String get fieldXhttpExtra => 'Extra (JSON)';
+
+  @override
+  String get xhttpExtraHint => 'Advanced XHTTP options, Xray or sing-box keys';
+
+  @override
+  String xhttpExtraInvalid(String details) {
+    return 'Invalid XHTTP options: $details';
+  }
+
+  @override
   String get fieldPrivateKey => 'Private key';
 
   @override
