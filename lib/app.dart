@@ -31,12 +31,41 @@ class WanXApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      builder: (context, child) => _PhoneWidth(child: child!),
       // The data disclosure comes before anything else, once.
       home: loaded == null
           ? const SizedBox.shrink()
           : settings.privacyAccepted
           ? const ServersScreen()
           : const PrivacyNoticeScreen(),
+    );
+  }
+}
+
+/// On tablets the phone layout is centered at a readable width instead of
+/// stretched across the screen; dialogs and sheets follow it.
+class _PhoneWidth extends StatelessWidget {
+  const _PhoneWidth({required this.child});
+
+  static const _maxWidth = 600.0;
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    if (media.size.width <= _maxWidth) return child;
+    return ColoredBox(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Center(
+        child: SizedBox(
+          width: _maxWidth,
+          child: MediaQuery(
+            data: media.copyWith(size: Size(_maxWidth, media.size.height)),
+            child: child,
+          ),
+        ),
+      ),
     );
   }
 }
